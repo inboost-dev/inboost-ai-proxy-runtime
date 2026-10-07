@@ -108,23 +108,47 @@ InBoost AI Proxy relies heavily on [`agent-tool-parser`](https://github.com/inbo
 
 ---
 
-## 📊 Benchmark Results (SWE-bench Verified 30)
+## 📊 Empirical Benchmarks & Evaluation Methodology
 
-In empirical evaluations across 30 real-world repository tasks from the **SWE-bench Verified Cohort** comparing vanilla autonomous agents against agents running through InBoost AI Proxy:
+We evaluate InBoost AI Proxy across real-world repository tasks from **SWE-bench Verified** under two distinct, complementary evaluation layers:
+
+1. **Official SWE-bench Test Resolve Rate:** Evaluated inside isolated Docker containers via the official Princeton SWE-bench harness (`swebench.harness.run_evaluation`), measuring whether repository unit tests (`FAIL_TO_PASS` / `PASS_TO_PASS`) pass.
+2. **Agent Execution Reliability & Infrastructure:** Evaluated via InBoost AI Proxy L7 telemetry during live agent runs (Claude Code CLI / OpenHands), measuring 0-byte abort prevention, circular loop recovery, latency, and token spend reduction.
+
+> 📁 **Public Predictions & Logs:** Full prediction `.jsonl` files and official Docker `report.json` manifests are published in [`benchmarks/`](./benchmarks/) for immediate, independent reproduction.
+
+---
+
+### Layer 1: Official SWE-bench Verified Test Resolve Rate (Docker Harness)
+
+Measured by running the official Princeton SWE-bench evaluation harness against generated patches:
+
+| Cohort & Upstream Model | Baseline (Vanilla Agent) | With InBoost AI Proxy | InBoost Advantage | Artifacts & Manifests |
+| :--- | :---: | :---: | :---: | :---: |
+| **SWE-bench Verified 10**<br>*(MiniMax-M3 on SiliconFlow)* | 2 / 10 (**20.0%**) | **5 / 10 (50.0%)** | **+150% (2.5x Resolve Rate)**<br>*(6 tasks rescued from 0-byte aborts)* | [Predictions & Report](benchmarks/swebench_verified_10/) |
+| **SWE-bench Verified 25**<br>*(DeepSeek-V4)* | 6 / 25 (**24.0%**) | **13 / 25 (52.0%)** | **+116% (2.16x Resolve Rate)**<br>*(9 tasks rescued from 0-byte aborts)* | [Predictions & Report](benchmarks/swebench_verified_25/) |
+
+---
+
+### Layer 2: Agent Execution Reliability & Infrastructure Scoreboard (30-Task Evaluation)
+
+In autonomous agent evaluations across 30 tasks from SWE-bench Verified comparing vanilla agents directly calling upstream models vs. agents routing through InBoost AI Proxy:
 
 > **Tip:** You can inspect or trigger the live A/B evaluation workflow anytime in GitHub Actions via [`.github/workflows/swebench-eval.yml`](https://github.com/inboost-dev/inboost-ai-proxy-runtime/blob/main/.github/workflows/swebench-eval.yml).
 
-### Performance, Cost & Reliability Scoreboard
-
-| Metric | Baseline (Vanilla Agent) | With InBoost AI Proxy | Practical Value |
+| Metric | Baseline (Vanilla Agent) | With InBoost AI Proxy | Practical Value & Role |
 | :--- | :--- | :--- | :--- |
-| **Patch Resolution Yield** | 19 / 30 (63.3%) | **30 / 30 (100.0%)** | **+36.7% reliable first-attempt patch delivery** |
-| **Wasted Runs (0-Byte Aborts)** | 11 / 30 (36.7% wasted spend) | **0 / 30 (0.0% waste)** | **Eliminates wasted compute from empty submissions** |
-| **Average Task Turnaround** | 248.5 s (4.1 min) | **111.1 s (1.8 min)** | **2.24x speedup in developer turnaround time** |
-| **Batch Time (30 Tasks)** | 124.2 min (~2.1 hours) | **55.5 min (< 1 hour)** | **Over 1 hour saved per batch** |
-| **Circular Loops Intercepted** | 0 (loops exhaust token limits) | **42 circular loops stopped** | **Recovers stalled runs and pushes agents to edit** |
-| **Net API Spend Reduction** | Baseline cost (100%) | **~43.8% net savings** | **Reduces monthly model provider bills** |
-| **Syntax Drift Rate** | Vulnerable to syntax drift | **0 syntax errors** | **Production-ready git diffs ready for review** |
+| **First-Attempt Patch Delivery Rate** | 19 / 30 (63.3%) | **30 / 30 (100.0%)** | **+36.7% reliable non-empty git diff delivery** *(non-zero patch yield)* |
+| **Wasted Runs (0-Byte Aborts)** | 11 / 30 (36.7% wasted spend) | **0 / 30 (0.0% waste)** | **Eliminates compute spend lost to empty agent submissions** |
+| **Average Task Turnaround** | 248.5 s (4.1 min) | **111.1 s (1.8 min)** | **2.24x speedup** *(measured from agent start to diff emission)* |
+| **Batch Time (30 Tasks)** | 124.2 min (~2.1 hours) | **55.5 min (< 1 hour)** | **Over 1 hour saved per 30-task run** |
+| **Circular Loops Intercepted** | 0 (loops exhaust context limit) | **42 circular loops stopped** | **LoopBreaker intercepts repetitive tool queries** |
+| **Net API Spend Reduction** | Baseline spend (100%) | **~43.8% net savings** | **Proxy L1 SLM offloading & KV-cache alignment** |
+| **Syntax Drift Rate** | Vulnerable to broken syntax | **0 syntax errors** | **Pre-submission AST validation prevents malformed code** |
+
+> [!NOTE]
+> **Methodology Note:** Official test pass rates in Layer 1 are measured strictly via Docker containers using `python3 -m swebench.harness.run_evaluation`. Latency, token spend reduction, and loop interception in Layer 2 are measured from InBoost AI Proxy's client-side telemetry and session instrumentation during agent runs.
+
 
 ---
 

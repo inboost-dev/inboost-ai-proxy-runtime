@@ -143,6 +143,11 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Simulate execution without live Claude CLI / LLM API calls for rapid testing",
     )
+    parser.add_argument(
+        "--eval-docker",
+        action="store_true",
+        help="Run official Princeton SWE-bench Docker test harness (swebench.harness.run_evaluation) on predictions",
+    )
     return parser.parse_args(args)
 
 
@@ -355,10 +360,10 @@ class Swebench2ArmsRunner:
             b_res = b_map.get(i_id)
             i_res = i_map.get(i_id)
 
-            b_p = "✅ Valid Patch" if (b_res and b_res.has_patch) else "❌ 0-Byte Abort"
+            b_p = "✅ Delivered" if (b_res and b_res.has_patch) else "❌ 0-Byte Abort"
             b_time = f"{b_res.duration_sec:.1f}s" if b_res else "-"
 
-            i_p = "✅ Valid Patch" if (i_res and i_res.has_patch) else "❌ Empty"
+            i_p = "✅ Delivered" if (i_res and i_res.has_patch) else "❌ Empty"
             i_time = f"{i_res.duration_sec:.1f}s" if i_res else "-"
             i_offload = (
                 f"{(i_res.slm_tokens / max(1, (i_res.prompt_tokens + i_res.completion_tokens)) * 100):.1f}%"
@@ -372,20 +377,20 @@ class Swebench2ArmsRunner:
         diff_patches = i_patches - b_patches
         diff_patch_str = f"+{diff_patches}" if diff_patches > 0 else str(diff_patches)
 
-        report = f"""# 📊 SWE-bench Verified 10-Task Comparative Evaluation Scoreboard
+        report = f"""# 📊 SWE-bench Verified 2-Arms Comparative Evaluation Report
 **Timestamp:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%SZ')}  
 **Evaluation Scope:** 2-Arm Randomized Cohort (`Arm 1: Vanilla Baseline Direct Heavy` vs `Arm 2: Claude Code + InBoost AI Proxy`)  
 **Portal & Documentation:** [https://inboost.pro/ai-proxy](https://inboost.pro/ai-proxy) | [GitHub Issues](https://github.com/inboost-dev/inboost-ai-proxy-runtime/issues)
 
 ---
 
-## 🚀 Headline Benchmark KPIs
+## 🚀 Headline Benchmark KPIs (Agent Execution Reliability)
 
 | Metric | Arm 1: Baseline (Vanilla Heavy) | Arm 2: Claude Code + InBoost AI Proxy | InBoost Advantage |
 | :--- | :---: | :---: | :---: |
-| **Valid Patches Generated** | **{b_patches}/{len(baseline_results)}** ({(b_patches / max(1, len(baseline_results)) * 100):.1f}%) | **{i_patches}/{len(inboost_results)}** ({(i_patches / max(1, len(inboost_results)) * 100):.1f}%) | **{diff_patch_str} Rescued Patches** |
+| **Non-Empty Patches Delivered** | **{b_patches}/{len(baseline_results)}** ({(b_patches / max(1, len(baseline_results)) * 100):.1f}%) | **{i_patches}/{len(inboost_results)}** ({(i_patches / max(1, len(inboost_results)) * 100):.1f}%) | **{diff_patch_str} Rescued Patches** |
 | **0-Byte Diff Collapses** | {len(baseline_results) - b_patches} task(s) aborted | **0 aborted (Synthetic Loopback)** | **100% Patch Preservation** |
-| **Cheap SLM Compute Offload** | 0.0% (100% Heavy GPU) | **{offload_pct:.1f}% offloaded to L1** | **Reduced GPU Load** |
+| **Cheap SLM Offload Rate** | 0.0% (100% Heavy GPU) | **{offload_pct:.1f}% offloaded to L1** | **Reduced GPU Load** |
 | **Agent Infinite Loops Blocked** | 0 (Vulnerable) | **{i_loops_saved} loops averted** | **LoopBreaker Protection** |
 | **Average Task Duration** | {b_avg_time:.1f}s | **{i_avg_time:.1f}s** | **-{time_speedup:.1f}% Latency Reduction** |
 | **Total Inference Spend (Est.)** | **${b_cost:.4f}** | **${i_cost:.4f}** | **-{cost_savings_pct:.1f}% Cost Reduction** |
@@ -394,15 +399,28 @@ class Swebench2ArmsRunner:
 
 ## 📋 Per-Instance Side-by-Side Audit
 
-| Instance ID | Arm 1: Patch | Arm 1: Time | Arm 2: Patch | Arm 2: Time | Arm 2: L1 Offload | Arm 2: Loops Saved |
+| Instance ID | Arm 1: Patch Delivery | Arm 1: Time | Arm 2: Patch Delivery | Arm 2: Time | Arm 2: L1 Offload | Arm 2: Loops Saved |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 """
         report += "\n".join(rows) + "\n\n---\n"
         report += (
             "## 🔬 Evaluation Methodology & Invariants\n\n"
-            "- **Arm 1 (Vanilla Baseline):** Claude Code CLI connects directly to SiliconFlow Heavy GPU model (`deepseek-ai/DeepSeek-V4-Pro`) without semantic route classification, without AST pre-validation, and without loop protection.\n"
+            "- **Arm 1 (Vanilla Baseline):** Claude Code CLI connects directly to SiliconFlow Heavy GPU model without semantic route classification, without AST pre-validation, and without loop protection.\n"
             "- **Arm 2 (Claude Code + InBoost AI Proxy):** Claude Code CLI routes inference through local InBoost Proxy (`http://127.0.0.1:8080`), applying L0 CPU AST pre-validation, CacheAligner volatile token canonicalization, L1 Flash offloading for exploratory turns, and LoopBreaker intervention.\n"
-            "- All patches and trajectories are preserved in the run artifact bundle for third-party auditing.\n"
+            "- **Methodology Note:** The metrics above measure agent execution reliability (patch delivery yield, latency, token spend, loop avoidance). To measure unit test pass rates, proceed to official Docker test evaluation.\n\n"
+            "---\n\n"
+            "## 🐳 Next Step: Official SWE-bench Test Harness Evaluation (Docker)\n\n"
+            "To verify whether these generated patches solve the underlying issues without regressing other unit tests, run Princeton's official Docker evaluation harness:\n\n"
+            "```bash\n"
+            "# 1. Install official SWE-bench evaluation harness\n"
+            "pip install swebench\n\n"
+            "# 2. Run Docker evaluation on InBoost predictions:\n"
+            "python3 -m swebench.harness.run_evaluation \\\n"
+            "  --dataset_name princeton-nlp/SWE-bench_Verified \\\n"
+            f"  --predictions_path {self.output_dir / 'arm_2_inboost' / 'all_preds.jsonl'} \\\n"
+            "  --run_id inboost_docker_eval \\\n"
+            "  --max_workers 4\n"
+            "```\n"
         )
         return report
 
@@ -436,6 +454,7 @@ class Swebench2ArmsRunner:
                 res = self.run_arm_instance(inst, "arm_1_baseline", arm1_dir)
                 baseline_results.append(res)
             self.export_swebench_predictions(baseline_results, arm1_dir / "all_preds.jsonl")
+            self.export_swebench_predictions(baseline_results, self.output_dir / "predictions_baseline.jsonl")
 
         # 2. Arm 2: InBoost
         if self.config.arms in ("both", "inboost"):
@@ -446,12 +465,37 @@ class Swebench2ArmsRunner:
                 res = self.run_arm_instance(inst, "arm_2_inboost", arm2_dir)
                 inboost_results.append(res)
             self.export_swebench_predictions(inboost_results, arm2_dir / "all_preds.jsonl")
+            self.export_swebench_predictions(inboost_results, self.output_dir / "predictions_inboost.jsonl")
 
         # 3. Comparative Reporting
         report_md = self.generate_comparative_report(baseline_results, inboost_results)
         report_path = self.output_dir / "swebench_2arms_comparison_report.md"
         report_path.write_text(report_md, encoding="utf-8")
         logger.info("Comparative evaluation report saved to: %s", report_path)
+
+        # 4. Optional Official Docker Harness Execution
+        if getattr(self.config, "eval_docker", False):
+            logger.info("=== Running Official SWE-bench Docker Harness Evaluation ===")
+            for arm_name, pred_file in [("baseline", self.output_dir / "predictions_baseline.jsonl"), ("inboost", self.output_dir / "predictions_inboost.jsonl")]:
+                if pred_file.exists():
+                    logger.info("Evaluating %s via swebench.harness.run_evaluation", arm_name)
+                    cmd = [
+                        sys.executable,
+                        "-m",
+                        "swebench.harness.run_evaluation",
+                        "--dataset_name",
+                        "princeton-nlp/SWE-bench_Verified",
+                        "--predictions_path",
+                        str(pred_file),
+                        "--run_id",
+                        f"swebench_{arm_name}_eval",
+                        "--max_workers",
+                        "4",
+                    ]
+                    try:
+                        subprocess.run(cmd, check=True)
+                    except Exception as e:
+                        logger.error("Failed to run swebench harness: %s", e)
 
         # Output directly to GitHub Actions Step Summary if running in CI
         step_summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
