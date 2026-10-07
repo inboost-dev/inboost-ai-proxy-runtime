@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inboost-ai-proxy-runtime"
+version = "0.3.1"
+description = "Distribution and binary release hub for InBoost AI Proxy: the sub-millisecond semantic inference gateway for AI coding agents."
+readme = "README.md"
+license = { text = "InBoost Free Community License (with Automatic Pro Elevation) v1.1" }
+authors = [
+    { name = "InBoost Technologies", email = "inbound@inboost.pro" }
+]
+urls = { Homepage = "https://inboost.pro/ai-proxy", Repository = "https://github.com/inboost-dev/inboost-ai-proxy-runtime", Issues = "https://github.com/inboost-dev/inboost-ai-proxy-runtime/issues" }
+
+[tool.setuptools]
+packages = []
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+

@@ -1,0 +1,55 @@
+# InBoost AI Proxy Configuration (SiliconFlow International Profile)
+# https://inboost.pro/ai-proxy
+#
+# Готовый профиль для международного шлюза SiliconFlow (api.siliconflow.com)
+#
+# Верифицированные связки моделей из бенчмарков InBoost:
+# 1. Frontier 2026 (По умолчанию):
+#    L1 Fast: deepseek-ai/DeepSeek-V4-Flash | L2 Deep: deepseek-ai/DeepSeek-V4-Pro
+# 2. Ultra-Economy (Free SLM + DeepSeek-V3):
+#    L1 Fast: Qwen/Qwen2.5-7B-Instruct (0.00$ на SiliconFlow) | L2 Deep: deepseek-ai/DeepSeek-V3
+# 3. SWE-bench Verified Baseline:
+#    L1 Fast: MiniMaxAI/MiniMax-M2.5 | L2 Deep: MiniMaxAI/MiniMax-M3
+#
+# Использование:
+#   inboost-proxy --config ~/.inboost/config.siliconflow.yaml
+# или:
+#   cp ~/.inboost/config.siliconflow.yaml ~/.inboost/config.yaml
+
+server:
+  host: '127.0.0.1'
+  port: 8080
+
+agent: 'claude-code'
+
+upstream:
+  fast:
+    name: 'Fast (L1 - Flash)'
+    provider_format: 'openai'
+    base_url: 'https://api.siliconflow.com/v1'
+    model: 'deepseek-ai/DeepSeek-V4-Flash'
+    api_key: '${SILICONFLOW_API_KEY}'
+    timeout_sec: 60.0
+  deep:
+    name: 'Deep (L2 - Pro)'
+    provider_format: 'openai'
+    base_url: 'https://api.siliconflow.com/v1'
+    model: 'deepseek-ai/DeepSeek-V4-Pro'
+    api_key: '${SILICONFLOW_API_KEY}'
+    timeout_sec: 120.0
+
+# ==============================================================================
+# Arbiter & Cognitive Optimization Gates
+# ==============================================================================
+arbiter:
+  enforce_diff_budget: true       # Защита от раздувания диффов (> 180 строк)
+  enforce_inspection_gate: true   # Предотвращение обрывов по токенам в рассуждениях
+  enforce_loop_breaker: true      # Прерывание повторяющихся циклов чтения файлов
+
+optimizer:
+  enable_cache_aligner: true      # Нормализация токенов для максимизации KV-кэша
+  enable_smart_crusher: true      # Сжатие избыточного вывода
+  crush_threshold_bytes: 256
+  enable_synthetic_loopback: true # Спасение пустых 0-байтных диффов
+  enable_kv_lease: true           # Прогрев и удержание контекста модели
+  kv_lease_ttl_sec: 180.0

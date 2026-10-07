@@ -1,0 +1,33 @@
+name: 💡 Feature Request
+description: Suggest an idea, enhancement, or new provider adapter for InBoost
+title: "[feature request]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a feature! Please provide details about your use case and desired capability.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or Use Case
+      description: Is your feature request related to a problem or a specific agent workflow?
+      placeholder: "I'm always frustrated when integrating with custom local models because..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe what you want to happen and how you envision it working.
+      placeholder: "Add an adapter for provider XYZ with automatic rate-limit backoff..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or workarounds you've evaluated.

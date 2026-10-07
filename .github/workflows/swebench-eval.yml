@@ -1,0 +1,191 @@
+name: SWE-bench Verified 10-Task Evaluation (Claude Code + InBoost vs Vanilla Baseline)
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Number of SWE-bench instances to evaluate"
+        required: true
+        default: "10"
+        type: choice
+        options:
+          - "3"
+          - "5"
+          - "10"
+      heavy_model:
+        description: "L2 Heavy Model (SiliconFlow)"
+        required: true
+        default: "deepseek-ai/DeepSeek-V4-Pro"
+        type: string
+      slm_model:
+        description: "L1 Fast Model (SiliconFlow)"
+        required: true
+        default: "deepseek-ai/DeepSeek-V4-Flash"
+        type: string
+      mock_mode:
+        description: "Dry-run simulation mode (0 credit consumption)"
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: swebench-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  swebench-eval:
+    name: SWE-bench Verified Evaluation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+      INBOOST_HOST: "127.0.0.1"
+      INBOOST_PORT: "8080"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Agent Tools & Claude Code CLI
+        run: |
+          echo "=== 1. Installing Claude Code CLI ==="
+          npm install -g @anthropic-ai/claude-code
+          claude --version || echo "Claude Code CLI installed."
+
+      - name: Configure and Launch InBoost AI Proxy
+        run: |
+          echo "=== 2. Configuring InBoost AI Proxy ==="
+          mkdir -p "$HOME/.inboost"
+
+          KEY_VAL="${SILICONFLOW_API_KEY:-dummy-key-for-mock}"
+          HEAVY="${{ inputs.heavy_model || 'deepseek-ai/DeepSeek-V4-Pro' }}"
+          SLM="${{ inputs.slm_model || 'deepseek-ai/DeepSeek-V4-Flash' }}"
+
+          cat << EOF > "$HOME/.inboost/config.yaml"
+          server:
+            host: '127.0.0.1'
+            port: 8080
+
+          agent: 'claude-code'
+
+          upstream:
+            fast:
+              name: 'Fast (L1 - Flash)'
+              provider_format: 'openai'
+              base_url: 'https://api.siliconflow.com/v1'
+              model: '$SLM'
+              api_key: '$KEY_VAL'
+              timeout_sec: 60.0
+            deep:
+              name: 'Deep (L2 - Pro)'
+              provider_format: 'openai'
+              base_url: 'https://api.siliconflow.com/v1'
+              model: '$HEAVY'
+              api_key: '$KEY_VAL'
+              timeout_sec: 120.0
+
+          arbiter:
+            enforce_diff_budget: true
+            enforce_inspection_gate: true
+            enforce_loop_breaker: true
+
+          optimizer:
+            enable_cache_aligner: true
+            enable_smart_crusher: true
+            enable_synthetic_loopback: true
+            enable_kv_lease: true
+          EOF
+
+          echo "Launching proxy gateway..."
+          if [ -f "dist/inboost-proxy-linux-x86_64" ]; then
+            chmod 755 dist/inboost-proxy-linux-x86_64
+            dist/inboost-proxy-linux-x86_64 --config "$HOME/.inboost/config.yaml" > proxy_daemon.log 2>&1 &
+          else
+            node bin/inboost-proxy.js --port 8080 > proxy_daemon.log 2>&1 &
+          fi
+          PROXY_PID=$!
+          echo "$PROXY_PID" > proxy.pid
+
+          echo "Awaiting proxy health readiness on http://127.0.0.1:8080/health..."
+          READY=0
+          for i in $(seq 1 30); do
+            if curl -fsSL http://127.0.0.1:8080/health > /dev/null 2>&1; then
+              echo "Proxy responded healthy after ${i}s."
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            echo "ERROR: Proxy failed to become ready within 30s. Proxy log output:"
+            cat proxy_daemon.log || true
+            exit 1
+          fi
+
+          curl -fsSL http://127.0.0.1:8080/health
+
+      - name: Execute 2-Arms SWE-bench Benchmark
+        id: run_benchmark
+        run: |
+          echo "=== 3. Running 2-Arms SWE-bench Benchmark ==="
+          EXTRA_FLAGS=""
+          if [ "${{ inputs.mock_mode }}" = "true" ] || [ -z "$SILICONFLOW_API_KEY" ]; then
+            echo "Note: Running benchmark with --mock simulation."
+            EXTRA_FLAGS="--mock"
+          fi
+
+          LIMIT="${{ inputs.limit || '10' }}"
+          HEAVY="${{ inputs.heavy_model || 'deepseek-ai/DeepSeek-V4-Pro' }}"
+          SLM="${{ inputs.slm_model || 'deepseek-ai/DeepSeek-V4-Flash' }}"
+
+          python3 scripts/run_swebench_2arms.py \
+            --instances configs/swebench_cohort_10.json \
+            --arms both \
+            --limit "$LIMIT" \
+            --model-name "$HEAVY" \
+            --slm-model "$SLM" \
+            $EXTRA_FLAGS
+
+      - name: Publish Scoreboard to GitHub Actions Job Summary
+        if: always()
+        run: |
+          REPORT="runs/swebench_2arms/swebench_2arms_comparison_report.md"
+          if [ -f "$REPORT" ]; then
+            cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+            echo "Successfully appended SWE-bench Scoreboard to Job Summary."
+          else
+            echo "Report not found at $REPORT."
+          fi
+
+      - name: Upload Benchmark Results & Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swebench-verified-10-evaluation-results
+          path: |
+            runs/swebench_2arms/
+            proxy_daemon.log
+
+      - name: Stop InBoost AI Proxy Daemon
+        if: always()
+        run: |
+          if [ -f "proxy.pid" ]; then
+            PID="$(cat proxy.pid)"
+            kill "$PID" 2>/dev/null || true
+            echo "Proxy stopped."
+          fi

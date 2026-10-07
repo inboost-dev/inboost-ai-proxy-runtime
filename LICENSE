@@ -1,0 +1,189 @@
+# InBoost Free Community License (with Automatic Pro Elevation)
+Version 1.1 — October 2026
+Repository: https://github.com/inboost-dev/inboost-ai-proxy-runtime
+Website: https://inboost.pro/ai-proxy
+Copyright (C) 2026 InBoost Technologies. All rights reserved.
+
+---
+
+### PREAMBLE
+
+This License Agreement ("Agreement") governs the download, installation, execution, evaluation, and integration of the InBoost AI Proxy, InBoost Runtime, and accompanying binary components ("Software") provided by InBoost Technologies ("InBoost").
+
+InBoost provides an accessible, non-revocable Community License for individual developers, researchers, evaluators, and organizations, coupled with an automatic, zero-friction elevation to a commercial InBoost Pro License upon the placement or discovery of an authorized cryptographic license file.
+
+BY DOWNLOADING, INSTALLING, RUNNING, OR USING THE SOFTWARE, YOU AGREE TO BE BOUND BY ALL TERMS, CONDITIONS, RESTRICTIONS, AND DISCLAIMERS SET FORTH IN THIS AGREEMENT (INCLUDING INBOOST'S EXCLUSIVE RIGHT UNDER SECTION 11 TO ELECT THE DISPUTE RESOLUTION FORUM, AND THE WAIVER OF CLASS ACTIONS). IF YOU DO NOT AGREE TO THESE TERMS IN THEIR ENTIRETY, YOU ARE NOT LICENSED TO USE THE SOFTWARE AND YOU MUST CEASE ALL USE IMMEDIATELY.
+
+---
+
+### 1. COMMUNITY LICENSE GRANT (FREE TIER) & SCOPE OF AGENT ENVIRONMENTS
+
+Subject to the terms, limitations, and disclaimers of this Agreement, InBoost hereby grants to You (an individual developer, researcher, evaluator, or corporate entity) a worldwide, royalty-free, non-exclusive, non-transferable, revocable-only-for-breach license to download, install, execute, operate, and integrate the Software with:
+
+1. **Named Agent Environments:** Interactive developer environments, autonomous coding assistants, and coding agents — including but not limited to Claude Code CLI, Cursor, OpenHands, Aider, Cline, Devin-style autonomous architectures, Windsurf, Copilot Workspace, Zed, Neovim, VS Code, and JetBrains IDE extensions;
+2. **Benchmark & Evaluation Frameworks:** Continuous integration pipelines, benchmark evaluation suites (including SWE-bench, Can-It-Edit, HumanEval), and automated regression test harnesses; and
+3. **Universal Open-Ended Scope:** **Any and all other current or future agentic development environments, autonomous software engineering agents, CLI agent tools, IDE plugins, language model proxies, workflow orchestrators, or custom in-house agent harnesses**, whether proprietary, open-source, commercially distributed, or internally developed, without limitation,
+
+under the following operational allowances:
+
+#### 1.1. Tier Breakdown & Operational Allowances:
+1. **Free Developer Phase (Tasks 1 to 10):**
+   You are entitled to complete up to ten (10) autonomous coding tasks with full semantic acceleration, dynamic SLM offload, AST subtree repair, and loop interception, without payment, interruption, or promotional notices.
+2. **Sponsored Free Phase (Tasks 11 to 30):**
+   You are entitled to complete twenty (20) additional autonomous coding tasks with full optimization capabilities, during which the Software provides transparent, educational telemetry notices quantifying compute tokens offloaded, CPU operations performed, and cycles prevented.
+3. **Graceful Post-Quota Pass-Through Grant (Tasks > 30):**
+   Upon completion of thirty (30) total optimized tasks under the Community Edition, the Software does not terminate, brick, or abort agent workflows with HTTP 402 or abrupt session halts. Instead, the Software transitions into an un-optimized pass-through bypass mode (forwarding requests directly to upstream models without routing to cheap SLMs or applying local AST repairs), accompanied by informative upgrade advisories, until a valid Pro License is detected.
+
+#### 1.2. Discretionary Nature of Community Quotas & Unilateral Reservation of Rights (Subject to Change):
+1. **Promotional & Best-Effort Basis:** The allocation of free tasks, subsidized compute quotas, and sponsored routing allocations (including third-party inference backends or partner compute pools) are provided on a purely promotional, discretionary, voluntary, and "as-is" basis.
+2. **Absolute Right to Modify, Throttle, Substitute, or Terminate:** InBoost Technologies reserves the sole, unilateral, and unencumbered right, at its absolute discretion and without prior notice, liability, or compensation to You, to:
+   (a) Modify, reduce, adjust, cap, or eliminate the number of free or sponsored tasks allocated under the Community Edition;
+   (b) Substitute, reroute, replace, or alter upstream model providers, model families, routing mechanisms, or partner aggregators;
+   (c) Impose rate limits, queue delays, concurrency caps, or bandwidth throttling on community and sponsored traffic; and
+   (d) Temporarily suspend, restrict, or permanently discontinue sponsored compute allocations at any time.
+3. **No Service Level Agreement (SLA) or Enforceable Entitlement:** Nothing in this Agreement, the Software, or related promotional materials constitutes a binding Service Level Agreement (SLA), an express or implied warranty of uptime, a guarantee of continuous availability, or a permanent legal entitlement to free or subsidized compute.
+4. **Commercial & Production Workloads:** Users requiring guaranteed uptime, dedicated capacity, fixed SLAs, uncapped throughput, or contractual support must procure an InBoost Commercial Pro License AND supply their own provider API keys via Bring-Your-Own-Key (BYOK) mode.
+
+#### 1.3. Strictly Opt-In Product Improvement Telemetry & Upstream Execution (Community Edition):
+1. **Opt-In Telemetry Policy (Disabled by Default):** Telemetry is strictly disabled by default. If and only if You explicitly enable telemetry via an opt-in environment configuration (`INBOOST_TELEMETRY=1`), You grant InBoost Technologies the right to collect anonymized, aggregated operational statistics and system telemetry (including but not limited to token metrics, latency profiles, error rates, model routing classifications, and AST validation outcomes). All such statistics and telemetry are used solely and exclusively for product improvement purposes (including, without limitation, algorithmic routing optimization, cache alignment, and system performance enhancements). InBoost covenants that telemetry never captures, persists, or transmits proprietary source code, diff patches, user prompts, secrets, API keys, or personally identifiable information (Zero Secret Exposure invariant).
+2. **Third-Party Upstream Execution:** You expressly acknowledge, agree, and consent that model inference under the Community Edition, subsidized task quotas, and upstream routes is executed, processed, or hosted across user-configured third-party servers, partner compute clouds, or distributed hosting providers outside the control or ownership of InBoost.
+3. **Total Disclaimer of Third-Party Server Liability:** INBOOST DISCLAIMS ALL LIABILITY AND BEARS NO RESPONSIBILITY OR OBLIGATION WHATSOEVER FOR ANY THIRD-PARTY SERVERS, HARDWARE INFRASTRUCTURE, DATA HANDLING OR RETENTION POLICIES OF UPSTREAM HOSTS, SERVER DOWNTIME, SECURITY BREACHES, LATENCY, OR ACTS AND OMISSIONS OF THIRD-PARTY INFRASTRUCTURE OPERATORS. ALL COMMUNITY-TIER INFERENCE IS ACCESSED AND CONSUMED AT YOUR SOLE AND EXCLUSIVE RISK.
+
+---
+
+### 2. AUTOMATIC PRO ELEVATION CLAUSE
+
+#### 2.1. Automatic Trigger & Elevation Covenant:
+At any point during or after the Community Tier, upon detection and successful cryptographic verification of an authentic, unexpired InBoost License file (`inboost.lic`, specified via `--license <path>`, or set via the `INBOOST_LICENSE_FILE` environment variable) signed by InBoost:
+
+1. **Immediate Elevation:** This Agreement automatically, instantly, and without requiring software reinstallation, source recompilation, or separate contractual execution, elevates Your grant to the **InBoost Commercial Pro License**.
+2. **Uncapped Execution:** All Community task counters, sponsored telemetry notices, and bypass limitations are immediately dissolved. The Software operates with unlimited task execution and zero marketing headers.
+3. **Enterprise Acceleration:** The elevated license activates multi-process anticipatory warming, prioritized heuristic routing, and dedicated communication channels (`inbound@inboost.pro` or GitHub Issues).
+
+---
+
+### 3. DATA SOVEREIGNTY & ZERO SECRET EXPOSURE COVENANT
+
+InBoost explicitly covenants that the Software respects local privacy and adheres to strict Zero Secret Exposure invariants:
+1. **Local Processing Architecture:** All Abstract Syntax Tree (AST) reparative merges, volatile token stripping, and semantic analysis execute entirely on the local machine or host container CPU.
+2. **Zero Code Transmission & Ephemeral Transit:** In local execution mode and Bring-Your-Own-Key (BYOK) mode connecting directly to upstream providers, neither Your source code, diff patches, user prompts, nor LLM completions are ever stored or retained by InBoost. Inference payloads are processed locally or relayed directly to user-configured upstream model providers on an ephemeral pass-through basis, and are never persisted to disk, harvested, or used for model training without express consent.
+3. **No Key Harvesting:** Upstream provider API keys, Bearer tokens, and credentials remain strictly confidential and are never persisted to disk, telemetry logs, or InBoost analytics infrastructure.
+
+---
+
+### 4. RESTRICTIONS & PROHIBITED USES
+
+Except as expressly authorized in this Agreement or by prior written permission from InBoost:
+1. **No Reverse Engineering:** You shall not decompile, disassemble, decrypt, unpack, extract, or reverse engineer any compiled binary executables, native Rust/C++ extensions (`inboost-core`), or cryptographic signature validation modules.
+2. **No Anti-Tampering Circumvention:** You shall not tamper with, disable, or forge the cryptographic Ed25519 signature verification routines, HMAC usage tracking files, or hardware fingerprint integrity checks.
+3. **No Standalone Multi-Tenant SaaS Resale:** You shall not wrap, host, or expose the Software as a public, multi-tenant commercial inference routing service competing directly with InBoost without an executed Enterprise OEM Agreement.
+4. **Defensive Patent Termination:** If You, Your employer, or any of Your affiliates commence, institute, finance, or actively participate in any patent infringement litigation, claim, or proceeding against InBoost Technologies, its affiliates, contributors, or users alleging that the Software, runtime proxy, or any components thereof constitute direct, contributory, or induced patent infringement, all licenses granted to You under this Agreement (including both Community Edition and Commercial Pro tiers) shall immediately, automatically, and permanently terminate without prior notice.
+
+---
+
+### 5. TITLE & INTELLECTUAL PROPERTY
+
+1. **Software Ownership:** InBoost retains all right, title, interest, ownership, and intellectual property rights in and to the Software, including all binaries, algorithms, and documentation. No title to the intellectual property in the Software is transferred to You.
+2. **User Project Ownership:** InBoost claims no ownership, intellectual property rights, or copyright over any software, repositories, source code, or documentation developed, edited, or evaluated by You while using the Software.
+3. **Derivative Improvements & Model Weights:** InBoost retains sole and exclusive ownership of all right, title, and interest in and to any optimizations, algorithmic improvements, heuristic rules, model weights, or derivative technologies developed, trained, or tuned by InBoost using anonymized operational telemetry collected under Section 1.3.
+4. **Feedback License:** If You provide InBoost with any suggestions, bug reports, feature requests, or proposed enhancements ("Feedback"), You hereby grant InBoost an irrevocable, perpetual, royalty-free, worldwide, transferable, sublicensable license to use, incorporate, commercialize, and modify such Feedback without restriction, compensation, or attribution to You.
+
+---
+
+### 6. COMPREHENSIVE DISCLAIMER OF WARRANTIES
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
+
+1. **"AS IS" AND "AS AVAILABLE":** THE SOFTWARE, ITS BINARIES, RUNTIME SERVICES, SCRIPTS, PROXY COMPONENTS, AND SAMPLE CONFIGURATIONS ARE PROVIDED STRICTLY "AS IS" AND "AS AVAILABLE", WITH ALL FAULTS AND DEFECTS, AND WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE.
+2. **DISCLAIMER OF ALL IMPLIED WARRANTIES:** INBOOST TECHNOLOGIES AND ITS AFFILIATES, OFFICERS, DIRECTORS, EMPLOYEES, AGENTS, SUPPLIERS, AND LICENSORS EXPRESSLY DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, QUIET ENJOYMENT, ACCURACY, SYSTEM INTEGRATION, NON-INFRINGEMENT, AND ANY WARRANTIES ARISING OUT OF COURSE OF DEALING, USAGE, OR TRADE PRACTICE.
+3. **NO WARRANTY OF OPERATION OR LATENCY:** INBOOST MAKES NO WARRANTY OR REPRESENTATION THAT:
+   (a) THE SOFTWARE WILL MEET YOUR SPECIFIC REQUIREMENTS OR COMPATIBILITY EXPECTATIONS;
+   (b) THE OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED, TIMELY, SECURE, ACCURATE, OR ERROR-FREE;
+   (c) ROUTING CLASSIFICATIONS (INCLUDING SELECTION OF SLM, GPU, OR CPU BASKETS) WILL BE OPTIMAL OR ACHIEVE ANY GUARANTEED PERCENTAGE OF TOKEN SAVINGS OR LATENCY REDUCTION; OR
+   (d) DEFECTS, ANOMALIES, OR COMPILATION ERRORS IN UPSTREAM CONNECTORS OR DOWNSTREAM TOOLS WILL BE CORRECTED.
+
+---
+
+### 7. DISCLAIMER FOR AI-GENERATED CODE, AGENT ACTIONS & AST MODIFICATIONS
+
+1. **Probabilistic Nature of AI Models:** You expressly acknowledge and agree that the Software functions as an intermediary routing and optimization proxy interfacing with third-party Large Language Models (LLMs), local Small Language Models (SLMs), and autonomous agent frameworks, all of which are inherently probabilistic, non-deterministic, and susceptible to hallucinations, logical flaws, syntax errors, and incomplete implementations.
+2. **No Liability for Generated Code:** InBoost ASSUMES NO RESPONSIBILITY OR LIABILITY WHATSOEVER for:
+   (a) Any code, script, patch, diff, regular expression, AST subtree merge, or pull request generated, modified, suggested, refactored, or applied by connected AI models, agents, or the Software;
+   (b) Any compile failures, runtime crashes, memory leaks, performance degradations, security vulnerabilities, or regression defects introduced into Your repositories or applications;
+   (c) Any unintended file deletions, directory overwrites, git repository corruptions, or unauthorized terminal/shell commands executed by autonomous agents operating through the Software; or
+   (d) Any third-party intellectual property, copyright, patent, or open-source license infringements arising from the training data or output completions of connected language models.
+3. **User's Sole Responsibility for Verification:** **YOU BEAR SOLE AND EXCLUSIVE RESPONSIBILITY** for auditing, reviewing, testing, verifying, compiling, and approving all code changes, shell commands, and files before committing, executing, merging, or releasing them into any staging, testing, or production environment.
+
+---
+
+### 8. DISCLAIMER FOR UPSTREAM PROVIDERS, THIRD-PARTY SERVERS, APIS & FINANCIAL COSTS
+
+1. **Independent Third-Party Services:** InBoost is an independent developer tool and has no control over, nor liability for, third-party model providers, cloud backends, or inference hosting services (including but not limited to Anthropic, OpenAI, DeepSeek, Google Cloud, Microsoft Azure, AWS, OpenRouter, Groq, Fireworks, Together AI, or local Ollama/vLLM endpoints).
+2. **Disclaimer of Financial & Operational Costs:** INBOOST SHALL NOT BE LIABLE FOR:
+   (a) Any financial costs, token consumption charges, subscription fees, overages, or billing disputes incurred on Your accounts with any third-party model providers, regardless of routing basket (B0, B1, B2) or bypass fallback state;
+   (b) Any service interruptions, API deprecations, rate limiting, throttle bans, token outages, latency spikes, or account suspensions imposed by third-party model providers; or
+3. **Discretionary Compute & Sponsored Allocations:** Sponsored community compute allocations are provided on a discretionary, non-binding promotional basis as detailed in Section 1.2. InBoost assumes no liability for routing latency, queue delays, temporary unavailability, model deprecations, or sudden cessation of free or subsidized services.
+4. **Third-Party Server Execution & Zero Infrastructure Liability:** InBoost has no control over, and expressly disclaims all legal, operational, and financial responsibility for, any external, remote, or partner servers hosting model inference. InBoost makes no representations or warranties regarding the security, geographic location, data storage, logging practices, or availability of third-party compute infrastructure, and shall not be liable for any loss, damage, data leak, or breach resulting from data transmission to or execution on such servers.
+
+---
+
+### 9. COMPREHENSIVE LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
+
+1. **Exclusion of Consequential and Indirect Damages:** IN NO EVENT SHALL INBOOST TECHNOLOGIES, ITS AFFILIATES, CONTRIBUTORS, DIRECTORS, EMPLOYEES, AGENTS, OR LICENSORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF USE, DATA, REPOSITORIES, PROFITS, REVENUE, SAVINGS, BUSINESS, GOODWILL, WORK STOPPAGE, COMPUTER FAILURE, DOWNTIME, OR REPUTATIONAL HARM) ARISING OUT OF OR IN ANY WAY CONNECTED WITH THE USE, MISUSE, INABILITY TO USE, OR PERFORMANCE OF THE SOFTWARE, EVEN IF INBOOST HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+2. **Cap on Monetary Liability:** UNDER NO CIRCUMSTANCES SHALL INBOOST'S TOTAL AGGREGATE LIABILITY ARISING OUT OF OR RELATING TO THIS AGREEMENT, REGARDLESS OF THE FORM OF ACTION (WHETHER IN CONTRACT, TORT, STRICT LIABILITY, NEGLIGENCE, INDEMNITY, OR OTHERWISE), EXCEED THE GREATER OF:
+   (a) THE TOTAL AMOUNT ACTUALLY PAID BY YOU TO INBOOST FOR THE SOFTWARE IN THE TWELVE (12) MONTHS PRECEDING THE EVENT GIVING RISE TO LIABILITY; OR
+   (b) FIFTY UNITED STATES DOLLARS (USD $50.00), OR ZERO (USD $0.00) IN THE CASE OF THE FREE COMMUNITY TIER.
+
+---
+
+### 10. INDEMNIFICATION
+
+You agree to defend, indemnify, and hold harmless InBoost Technologies, its affiliates, directors, officers, employees, contributors, and agents from and against any claims, liabilities, losses, damages, fines, and expenses (including reasonable attorney's fees) arising out of or related to:
+1. Your use, deployment, or operation of the Software;
+2. Any code, software, application, or service built, modified, or deployed with the assistance of the Software;
+3. Your violation of any third-party rights, including intellectual property, privacy, or proprietary rights; or
+4. Your breach of any provision of this Agreement.
+
+---
+
+### 11. GOVERNING LAW, UNILATERAL FORUM ELECTION & DISPUTE RESOLUTION
+
+1. **Governing Law:** This Agreement and all claims, controversies, or disputes arising out of or relating to it shall be governed by and construed in accordance with recognized principles of international commercial contract law (including the UNIDROIT Principles of International Commercial Contracts), without giving effect to any conflict of laws doctrines.
+2. **Express Condition Precedent to Software License ("Take-It-or-Leave-It"):** ACCEPTANCE OF THIS SECTION 11 AND INBOOST'S EXCLUSIVE RIGHT TO ELECT AND DESIGNATE THE DISPUTE RESOLUTION FORUM IS AN INDISPENSABLE CONDITION PRECEDENT TO THE LICENSE GRANTED UNDER THIS AGREEMENT. INBOOST LICENSES AND PROVIDES THE SOFTWARE SOLELY ON THE CONDITION THAT INBOOST HOLDS THE UNILATERAL AND ABSOLUTE RIGHT TO DETERMINE THE FORUM FOR ANY DISPUTE. IF YOU DO NOT UNEQUIVOCALLY AGREE TO THIS CONDITION, YOU ARE NOT LICENSED OR PERMITTED TO ACCESS, DOWNLOAD, INSTALL, EXECUTE, OR USE THE SOFTWARE, AND YOU MUST IMMEDIATELY DISCONTINUE ALL USE.
+3. **Mandatory Dispute Notice & InBoost's Sole Right of Forum Election:**
+   (a) Prior to initiating or commencing any legal action, lawsuit, arbitration, or formal proceeding against InBoost, You must provide InBoost with formal written notice of dispute at `inbound@inboost.pro` (alias: `inboud@inboost.pro`) detailing the factual background and legal basis of Your claim.
+   (b) **InBoost's Unilateral Right to Elect Forum:** Within sixty (60) days of receiving Your dispute notice, **INBOOST SHALL HAVE THE SOLE, EXCLUSIVE, AND ABSOLUTE OPTION AND RIGHT TO ELECT AND DESIGNATE THE DISPUTE RESOLUTION FORUM**, which InBoost may elect at its discretion to be:
+       (i) Final, confidential, and binding commercial arbitration administered under the Arbitration Rules of the United Nations Commission on International Trade Law (UNCITRAL) or other international commercial arbitral institution designated in writing by InBoost, conducted in the English language by a single independent arbitrator; OR
+       (ii) The courts of general jurisdiction located in any city, venue, or country designated in writing by InBoost.
+   (c) **Dismissal of Improper Proceedings:** Any legal action, lawsuit, or proceeding commenced by You in any court or forum prior to InBoost's written election, or in violation of InBoost's designated forum, shall be immediately stayed, dismissed, or withdrawn at Your sole expense, and You agree to fully indemnify InBoost for all legal costs, court fees, and attorney's fees incurred in enforcing this forum selection covenant.
+4. **Injunctive & Equitable Relief:** InBoost retains the independent right to seek temporary, preliminary, or permanent injunctive or equitable relief before any court of competent jurisdiction to protect its intellectual property, trade secrets, confidential information, or to prevent unauthorized reverse engineering.
+5. **Class Action Waiver:** TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, ALL DISPUTES MUST BE RESOLVED EXCLUSIVELY ON AN INDIVIDUAL BASIS IN THE FORUM ELECTED BY INBOOST. YOU HEREBY EXPRESSLY, KNOWINGLY, AND VOLUNTARILY WAIVE ANY RIGHT TO COMMENCE, JOIN, PARTICIPATE IN, OR PROCEED UNDER ANY CLASS ACTION, COLLECTIVE ACTION, PRIVATE ATTORNEY GENERAL ACTION, OR REPRESENTATIVE LITIGATION OR ARBITRATION AGAINST INBOOST TECHNOLOGIES.
+6. **Official Inquiry Channels:** All licensing notices, legal requests, vulnerability disclosures, and communications must be submitted via GitHub Issues or sent to:
+   - **Official Portal:** https://inboost.pro/ai-proxy
+   - **Repository & Issue Tracker:** https://github.com/inboost-dev/inboost-ai-proxy-runtime/issues
+   - **Inbound Communications:** inbound@inboost.pro (alias: inboud@inboost.pro)
+
+---
+
+### 12. SEVERABILITY & MISCELLANEOUS
+
+1. **Severability:** If any provision of this Agreement is held to be invalid, illegal, or unenforceable by an arbitrator or court of competent jurisdiction, such provision shall be deemed modified to the minimum extent necessary to make it valid and enforceable, and the remaining provisions of this Agreement shall remain in full force and effect.
+2. **Survival:** The provisions of Sections 3 (Data Sovereignty), 4 (Restrictions), 5 (Title & Intellectual Property), 6 (Disclaimer of Warranties), 7 (Disclaimer for AI-Generated Code), 8 (Disclaimer for Upstream Providers & Servers), 9 (Limitation of Liability), 10 (Indemnification), 11 (Governing Law & Class Action Waiver), and 12 (Severability & Miscellaneous) shall survive any termination or expiration of this Agreement.
+3. **Export & Trade Compliance:** The Software and associated technical materials may be subject to applicable international trade, export, re-export, and economic sanctions regulations. You represent and warrant that Your access to and use of the Software shall comply strictly with all applicable domestic and international trade compliance laws and regulations.
+4. **No Third-Party Beneficiaries:** This Agreement is solely for the benefit of You and InBoost Technologies, and creates no rights, remedies, or obligations for any third party.
+5. **Entire Agreement:** This Agreement constitutes the complete and exclusive agreement between the parties concerning its subject matter and supersedes all prior or contemporaneous negotiations, representations, or agreements, whether written or oral.
+
+---
+
+### 13. TRADEMARK & BRAND DISCLAIMER
+
+All product names, logos, brands, trademarks, and registered trademarks cited in this Agreement, the Software, or associated documentation are the property of their respective owners. Any reference to third-party trademarks, software, or services (including, but not limited to, Anthropic, Claude, Claude Code, Cursor, OpenAI, ChatGPT, DeepSeek, SiliconFlow, OpenHands, Aider, Windsurf, Cline, vLLM, SGLang, Ollama, GitHub, and Apple) is solely for nominative identification, interoperability, and compatibility description purposes. Use of these names, logos, or brands does not imply endorsement, sponsorship, affiliation, or certification by their respective holders.
+
+---
+
+### 14. THIRD-PARTY OPEN-SOURCE SOFTWARE NOTICES & ATTRIBUTION
+
+The Software and its binary distributions incorporate, link to, or bundle third-party open-source components under permissive licenses (including the MIT License, BSD 3-Clause License, Apache License 2.0, and Python Software Foundation License). These third-party components are provided under their respective licenses and are not licensed under the InBoost proprietary license terms. Full copyright notices, disclaimers, and verbatim license texts for all included third-party components are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), which is incorporated herein by reference.
+

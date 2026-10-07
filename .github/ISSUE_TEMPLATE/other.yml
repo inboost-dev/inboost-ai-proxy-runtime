@@ -1,0 +1,34 @@
+name: 💬 Other / General Inquiry
+description: General questions, documentation feedback, benchmark inquiries, or discussions
+title: "[other]: "
+labels: ["question", "discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about InBoost AI Proxy, architecture, benchmark results, or documentation?  
+        Please provide details below. Remember our Zero Secret Exposure invariant: do not include private credentials or confidential code.
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Inquiry Category
+      description: What is this discussion regarding?
+      options:
+        - "Documentation or Guide Clarification"
+        - "Benchmark Reproducibility / Methodology"
+        - "Architecture & Cognitive Routing Discussion"
+        - "CacheAligner & Token Savings Mechanics"
+        - "General Feedback or Suggestion"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Description / Question
+      description: Provide clear context and details regarding your question or topic.
+      placeholder: "I had a question regarding how CacheAligner strips ephemeral tokens..."
+    validations:
+      required: true

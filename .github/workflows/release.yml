@@ -1,0 +1,123 @@
+name: Verify Assets & Publish Official Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: release-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  verify-and-test:
+    name: Verify Release Integrity, Smoke Test & Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install verification dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest cryptography anyio httpx twine
+
+      - name: Verify release checksums and decompressing leak audit
+        run: |
+          python3 scripts/verify_release.py --checksums dist/checksums.txt
+
+      - name: Run automated security and tamper-proofing test suite
+        run: |
+          pytest tests/
+
+      - name: Smoke test standalone native Linux binary
+        run: |
+          chmod +x dist/inboost-proxy-linux-x86_64
+          ./dist/inboost-proxy-linux-x86_64 --help
+          
+          # Start binary in background and verify live health check
+          python3 -c "
+          import subprocess, time, urllib.request, sys
+          proc = subprocess.Popen(
+              ['./dist/inboost-proxy-linux-x86_64', '--port', '8089', '--no-prompt', '--config', 'configs/proxy_config.yaml'],
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+          )
+          passed = False
+          for _ in range(20):
+              time.sleep(0.5)
+              try:
+                  with urllib.request.urlopen('http://127.0.0.1:8089/health', timeout=1) as resp:
+                      if resp.status == 200:
+                          print('Standalone native binary health check verified: HTTP 200 OK')
+                          passed = True
+                          break
+              except Exception:
+                  pass
+          proc.terminate()
+          proc.wait()
+          if not passed:
+              print('[ERROR] Binary health check failed to respond on port 8089', file=sys.stderr)
+              sys.exit(1)
+          "
+
+      - name: Smoke test global npm package installation
+        run: |
+          npm install -g ./dist/inboost-pro-inboost-ai-proxy-*.tgz
+          inboost-ai-proxy --help
+          inboost-proxy --help
+
+      - name: Smoke test native Python wheel installation
+        run: |
+          pip install ./dist/inboost_ai_proxy-*-cp312-cp312-linux_x86_64.whl
+          python3 -c "import inboost_proxy; print('Native Cython wheel verified successfully')"
+
+      - name: Create GitHub Release and Upload Verified Multi-Platform Assets
+        if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Release ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm Registry
+        if: (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch') && env.NPM_TOKEN != ''
+        run: |
+          echo "Publishing npm packages to public registry..."
+          npm config set //registry.npmjs.org/:_authToken "${NPM_TOKEN}"
+          npm publish ./dist/inboost-pro-inboost-ai-proxy-*.tgz --access public
+          npm publish ./dist/inboost-pro-inboost-proxy-*.tgz --access public
+          npm publish ./dist/inboost-ai-proxy-*.tgz --access public || true
+          npm publish ./dist/inboost-proxy-*.tgz --access public || true
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to PyPI
+        if: (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch') && env.PYPI_API_TOKEN != ''
+        run: |
+          echo "Publishing wheels to PyPI repository..."
+          twine upload dist/*.whl --username __token__ --password "${PYPI_API_TOKEN}" --skip-existing
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

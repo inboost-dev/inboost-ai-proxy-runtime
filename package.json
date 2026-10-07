@@ -1,0 +1,52 @@
+{
+  "name": "@inboost-pro/inboost-ai-proxy",
+  "version": "0.3.1",
+  "description": "Local inference proxy and reliability gateway for Claude Code, Cursor, OpenHands, and Cline",
+  "main": "bin/inboost-proxy.js",
+  "bin": {
+    "inboost-proxy": "./bin/inboost-proxy.js",
+    "inboost-ai-proxy": "./bin/inboost-proxy.js"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "README.md",
+    "LICENSE",
+    "LEGAL.md",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "start": "node bin/inboost-proxy.js",
+    "test": "node bin/inboost-proxy.js --version",
+    "install-skills": "node bin/inboost-proxy.js --install-skills",
+    "postinstall": "node bin/inboost-proxy.js --postinstall"
+  },
+  "keywords": [
+    "claude-code",
+    "cursor",
+    "openhands",
+    "cline",
+    "ai-proxy",
+    "llm-gateway",
+    "inference-proxy",
+    "swe-bench",
+    "developer-tools",
+    "inboost"
+  ],
+  "author": "InBoost Technologies <inbound@inboost.pro>",
+  "license": "InBoost Free Community License v1.1",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inboost-dev/inboost-ai-proxy-runtime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/inboost-dev/inboost-ai-proxy-runtime/issues"
+  },
+  "homepage": "https://inboost.pro/ai-proxy",
+  "publishConfig": {
+    "access": "public"
+  }
+}

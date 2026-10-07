@@ -1,0 +1,88 @@
+name: 🐛 Bug Report
+description: Report a bug, crash, or unexpected behavior in InBoost Proxy / Runtime
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please ensure that you do **NOT** include private API keys, bearer tokens, or proprietary codebase snippets in this report.
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which part of the InBoost ecosystem is experiencing the problem?
+      options:
+        - "inboost-proxy (CLI / Server)"
+        - "Claude Code Integration"
+        - "Cursor / VS Code Integration"
+        - "OpenHands / Benchmark Adapter"
+        - "AST Subtree Merger"
+        - "Topological Crusher"
+        - "License / Quota System"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Upstream Model Provider
+      description: Which upstream model provider is configured?
+      options:
+        - "OpenAI (Direct GPT API)"
+        - "Anthropic (Direct Claude API)"
+        - "DeepSeek API"
+        - "Local vLLM / Ollama"
+        - "Cloud Gateway (OpenRouter, Groq, etc.)"
+        - "GigaChat"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: "When running Claude Code with InBoost proxy, turn 5 encounters..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this behavior?
+      placeholder: |
+        1. Start proxy with `inboost-proxy --config proxy_config.yaml`
+        2. Execute `claude "fix issue #123"`
+        3. Observe error output in terminal...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: "Proxy should forward request to SLM and return synthesized patch without error."
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs (Sanitized)
+      description: Paste proxy terminal output or stderr here. Please ensure all secrets and API keys are redacted!
+      render: shell
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Info
+      description: OS version, Python version, Node.js version, and InBoost version.
+      placeholder: "Ubuntu 22.04 LTS, Python 3.12, Node v20.10, inboost-proxy v0.3.0"
+    validations:
+      required: true

@@ -1,0 +1,245 @@
+name: Bare Agent Environment Integration Test (npx & SiliconFlow)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - 'LEGAL.md'
+      - 'SECURITY.md'
+      - 'DCO.md'
+      - '.gitignore'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+  pull_request:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - 'LEGAL.md'
+      - 'SECURITY.md'
+      - 'DCO.md'
+      - '.gitignore'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+  workflow_dispatch:
+
+concurrency:
+  group: agent-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  agent-integration-test:
+    name: Clean Ubuntu Agent Environment Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Agent Tools on Bare Environment
+        run: |
+          echo "=== 1. Installing Claude Code CLI ==="
+          npm install -g @anthropic-ai/claude-code
+          claude --version || echo "Claude Code CLI installed successfully."
+
+      - name: Initialize Clean Workspace
+        id: init_ws
+        run: |
+          echo "=== 2. Creating isolated test workspace ==="
+          TEST_WS="/tmp/inboost-agent-workspace"
+          rm -rf "$TEST_WS"
+          mkdir -p "$TEST_WS"
+          cd "$TEST_WS"
+          git init
+          echo "print('hello from clean repo')" > main.py
+          echo "TEST_WS=$TEST_WS" >> "$GITHUB_OUTPUT"
+
+      - name: Install InBoost AI Proxy into Workspace
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          cd "$TEST_WS"
+
+          echo "=== 3. Installing inboost-ai-proxy package ==="
+          npm install "$GITHUB_WORKSPACE"
+          test -f "node_modules/.bin/inboost-ai-proxy" || { echo "inboost-ai-proxy binary not linked"; exit 1; }
+
+      - name: Configure .env with SiliconFlow (Testing Upstream)
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          cd "$TEST_WS"
+
+          echo "=== 4. Writing SiliconFlow proxy configuration into .env ==="
+          KEY_VAL="${SILICONFLOW_API_KEY:-sk-test-siliconflow-ci-mock}"
+
+          cat << EOF > .env
+          # InBoost Proxy Configuration (SiliconFlow Testing Gateway)
+          INBOOST_HOST=127.0.0.1
+          INBOOST_PORT=8080
+          ANTHROPIC_BASE_URL=http://127.0.0.1:8080/v1
+          OPENAI_BASE_URL=http://127.0.0.1:8080/v1
+          UPSTREAM_BASE_URL=https://api.siliconflow.com/v1
+          UPSTREAM_API_KEY=$KEY_VAL
+          SILICONFLOW_API_KEY=$KEY_VAL
+          SLM_MODEL=Qwen/Qwen2.5-7B-Instruct
+          HEAVY_MODEL=deepseek-ai/DeepSeek-V3
+          EOF
+
+          test -f .env || { echo ".env was not created"; exit 1; }
+          echo ".env successfully configured with SiliconFlow endpoint."
+
+      - name: Launch InBoost Proxy via npx (Automatic Skill Provisioning)
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          cd "$TEST_WS"
+
+          echo "=== 5. Launching InBoost Proxy via npx inboost-ai-proxy (no explicit install flags) ==="
+          npx inboost-ai-proxy --port 8080 --sync > proxy_ci.log 2>&1 &
+          PROXY_PID=$!
+          echo "$PROXY_PID" > proxy.pid
+
+          echo "Proxy started with PID $PROXY_PID. Awaiting health readiness..."
+
+          # Poll health endpoint with timeout up to 30s
+          READY=0
+          for i in $(seq 1 30); do
+            if curl -fsSL http://127.0.0.1:8080/health > /dev/null 2>&1; then
+              echo "Proxy responded healthy after ${i}s."
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            echo "ERROR: Proxy failed to become ready within 30s. Log contents:"
+            cat proxy_ci.log
+            exit 1
+          fi
+
+          echo "Proxy health check output:"
+          curl -fsSL http://127.0.0.1:8080/health
+
+      - name: Verify Automatic IDE Skills & Rules Installation
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          cd "$TEST_WS"
+
+          echo "=== 6. Verifying skills & rules were installed automatically by npx inboost-ai-proxy ==="
+
+          # Assert Claude Code Files
+          test -s "$HOME/.claude/skills/inboost-proxy/SKILL.md" || { echo "Missing ~/.claude/skills/inboost-proxy/SKILL.md"; exit 1; }
+          test -s "$HOME/.claude/CLAUDE.md" || { echo "Missing ~/.claude/CLAUDE.md"; exit 1; }
+          test -s "$HOME/.claude/commands/inboost.md" || { echo "Missing ~/.claude/commands/inboost.md"; exit 1; }
+          test -s "$TEST_WS/.claude/skills/inboost-proxy/SKILL.md" || { echo "Missing .claude/skills/inboost-proxy/SKILL.md"; exit 1; }
+          test -s "$TEST_WS/CLAUDE.md" || { echo "Missing workspace CLAUDE.md"; exit 1; }
+          test -s "$TEST_WS/.claude/commands/inboost.md" || { echo "Missing .claude/commands/inboost.md"; exit 1; }
+
+          # Assert Cursor IDE Files
+          test -s "$TEST_WS/.cursor/rules/inboost-proxy.mdc" || { echo "Missing .cursor/rules/inboost-proxy.mdc"; exit 1; }
+          test -s "$HOME/.cursor/rules/inboost-proxy.mdc" || { echo "Missing ~/.cursor/rules/inboost-proxy.mdc"; exit 1; }
+          test -s "$TEST_WS/.cursorrules" || { echo "Missing workspace .cursorrules"; exit 1; }
+          test -s "$HOME/.cursorrules" || { echo "Missing ~/.cursorrules"; exit 1; }
+
+          # Assert OpenHands & Agent Standard Files
+          test -s "$TEST_WS/.openhands/microagents/inboost.md" || { echo "Missing .openhands/microagents/inboost.md"; exit 1; }
+          test -s "$HOME/.openhands/microagents/inboost.md" || { echo "Missing ~/.openhands/microagents/inboost.md"; exit 1; }
+          test -s "$TEST_WS/.agents/skills/inboost-proxy/SKILL.md" || { echo "Missing .agents/skills/inboost-proxy/SKILL.md"; exit 1; }
+          test -s "$HOME/.agents/skills/inboost-proxy/SKILL.md" || { echo "Missing ~/.agents/skills/inboost-proxy/SKILL.md"; exit 1; }
+          test -s "$TEST_WS/AGENTS.md" || { echo "Missing AGENTS.md"; exit 1; }
+
+          # Assert Cline & Windsurf Rules
+          test -s "$TEST_WS/.clinerules" || { echo "Missing .clinerules"; exit 1; }
+          test -s "$TEST_WS/.windsurfrules" || { echo "Missing .windsurfrules"; exit 1; }
+
+          # Assert Aider CLI Configuration
+          test -s "$TEST_WS/.aider.conf.yml" || { echo "Missing .aider.conf.yml"; exit 1; }
+          test -s "$TEST_WS/CONVENTIONS.md" || { echo "Missing CONVENTIONS.md"; exit 1; }
+
+          # Assert Content Correctness
+          grep -q "http://localhost:8080/v1" "$TEST_WS/CLAUDE.md" || { echo "CLAUDE.md missing proxy URL"; exit 1; }
+          grep -q "http://localhost:8080/v1" "$TEST_WS/.cursorrules" || { echo ".cursorrules missing proxy URL"; exit 1; }
+          grep -q "diff-budget" "$TEST_WS/.openhands/microagents/inboost.md" || { echo "microagents missing diff-budget"; exit 1; }
+
+          echo "All agent skills and IDE rules verified: automatically installed without explicit flags."
+
+      - name: Verify Proxy Endpoints and Inference Routing
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          cd "$TEST_WS"
+
+          echo "=== 7. Testing /v1/models endpoint ==="
+          MODELS_RESP="$(curl -fsSL http://127.0.0.1:8080/v1/models)"
+          echo "$MODELS_RESP" | grep -q "inboost-adaptive" || { echo "Models endpoint missing inboost-adaptive"; exit 1; }
+
+          echo "=== 8. Testing /v1/chat/completions (OpenAI format) ==="
+          CHAT_PAYLOAD='{"model":"inboost-adaptive","messages":[{"role":"user","content":"Say hello in one word"}]}'
+          CHAT_CODE=$(curl -s -o /tmp/chat_resp.json -w "%{http_code}" -X POST http://127.0.0.1:8080/v1/chat/completions -H "Content-Type: application/json" -d "$CHAT_PAYLOAD")
+          echo "Chat endpoint HTTP status: $CHAT_CODE"
+          cat /tmp/chat_resp.json
+          echo ""
+          if [ "$CHAT_CODE" -ne 200 ] && [ "$CHAT_CODE" -ne 502 ]; then
+            echo "Unexpected chat HTTP status: $CHAT_CODE"
+            exit 1
+          fi
+
+          echo "=== 9. Testing /v1/messages (Anthropic format) ==="
+          MSG_PAYLOAD='{"model":"claude-3-5-sonnet-20241022","messages":[{"role":"user","content":"Respond with status: OK"}]}'
+          MSG_CODE=$(curl -s -o /tmp/msg_resp.json -w "%{http_code}" -X POST http://127.0.0.1:8080/v1/messages -H "Content-Type: application/json" -d "$MSG_PAYLOAD")
+          echo "Messages endpoint HTTP status: $MSG_CODE"
+          cat /tmp/msg_resp.json
+          echo ""
+          if [ "$MSG_CODE" -ne 200 ] && [ "$MSG_CODE" -ne 502 ]; then
+            echo "Unexpected messages HTTP status: $MSG_CODE"
+            exit 1
+          fi
+
+      - name: Verify Claude Code Environment Integration
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          cd "$TEST_WS"
+
+          echo "=== 10. Verifying Claude Code CLI environment compatibility ==="
+          export ANTHROPIC_BASE_URL="http://127.0.0.1:8080/v1"
+          export ANTHROPIC_API_KEY="test-inboost-proxy-ci-token"
+
+          # Verify CLAUDE.md in current directory has the proxy instruction
+          grep -q "ANTHROPIC_BASE_URL=http://localhost:8080/v1" "$TEST_WS/CLAUDE.md"
+          echo "Claude Code rules successfully wired to InBoost Proxy."
+
+      - name: Stop Background Proxy
+        if: always()
+        run: |
+          TEST_WS="${{ steps.init_ws.outputs.TEST_WS }}"
+          if [ -f "$TEST_WS/proxy.pid" ]; then
+            PID="$(cat "$TEST_WS/proxy.pid")"
+            kill "$PID" 2>/dev/null || true
+            echo "Background proxy ($PID) stopped."
+          fi
+          if [ -f "$TEST_WS/proxy_ci.log" ]; then
+            echo "=== Final Proxy Log Tail ==="
+            tail -n 30 "$TEST_WS/proxy_ci.log"
+          fi

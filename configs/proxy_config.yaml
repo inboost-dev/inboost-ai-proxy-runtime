@@ -1,0 +1,73 @@
+# InBoost AI Proxy Configuration
+# https://inboost.pro/ai-proxy
+#
+# Default profile tailored for Claude Code & Cursor autonomous coding agents.
+# Multi-tier cognitive orchestration:
+#   L0: Local CPU (AST Merge, Cache Aligner, Diff Budget Arbiter)
+#   L1: Fast SLM / Light Model (Exploration, Search, File Scanning)
+#   L2: Deep Heavy Model (Complex Architecture, Surgical Patch Synthesis)
+
+server:
+  host: '127.0.0.1'
+  port: 8080
+
+# ==============================================================================
+# Upstream Models Configuration (L1 Fast / L2 Deep)
+# ==============================================================================
+# Здесь задаются модели под уровни L1 и L2:
+#   L1 (fast) - быстрая модель для чтения файлов, поиска и первичного анализа.
+#   L2 (deep) - глубокая модель рассуждений для генерации хирургических патчей.
+
+agent: 'claude-code'
+
+upstream:
+  fast:
+    name: 'Fast (L1)'
+    provider_format: 'anthropic'
+    base_url: 'https://api.anthropic.com/v1'
+    model: 'claude-3-7-sonnet-20250219'
+    api_key: '${ANTHROPIC_API_KEY}'
+    timeout_sec: 60.0
+  deep:
+    name: 'Deep (L2)'
+    provider_format: 'anthropic'
+    base_url: 'https://api.anthropic.com/v1'
+    model: 'claude-3-7-sonnet-20250219'
+    api_key: '${ANTHROPIC_API_KEY}'
+    timeout_sec: 120.0
+
+# Для SiliconFlow International используйте отдельный готовый профиль:
+#   cp ~/.inboost/config.siliconflow.yaml ~/.inboost/config.yaml
+# или запускайте с флагом --config ~/.inboost/config.siliconflow.yaml
+# upstream:
+#   fast:
+#     name: 'Fast (L1 - Flash)'
+#     provider_format: 'openai'
+#     base_url: 'https://api.siliconflow.com/v1'
+#     model: 'deepseek-ai/DeepSeek-V4-Flash'
+#     api_key: '${SILICONFLOW_API_KEY}'
+#     timeout_sec: 60.0
+#   deep:
+#     name: 'Deep (L2 - Pro)'
+#     provider_format: 'openai'
+#     base_url: 'https://api.siliconflow.com/v1'
+#     model: 'deepseek-ai/DeepSeek-V4-Pro'
+#     api_key: '${SILICONFLOW_API_KEY}'
+#     timeout_sec: 120.0
+
+# ==============================================================================
+# Arbiter & Cognitive Optimization Gates
+# ==============================================================================
+arbiter:
+  enforce_diff_budget: true       # Prevents giant hallucinations (> 180 lines)
+  enforce_inspection_gate: true   # Enforces AST checks before test runs
+  enforce_loop_breaker: true      # Breaks repetitive agent doom loops
+
+optimizer:
+  enable_cache_aligner: true      # Normalizes volatile tokens for KV-cache reuse
+  enable_smart_crusher: true      # Trims repetitive tool logs (stdout/stderr)
+  crush_threshold_bytes: 256
+  enable_synthetic_loopback: true # Rescues empty diffs using isolated sub-agents
+  enable_kv_lease: true           # Keeps model contexts warm across steps
+  kv_lease_ttl_sec: 180.0
+

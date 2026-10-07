@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Official InBoost Documentation
+    url: https://inboost.pro/ai-proxy
+    about: Read full documentation, architecture whitepapers, and guides.
+  - name: 🛡️ Security & Bug Disclosures
+    url: mailto:inbound@inboost.pro
+    about: Report security vulnerabilities or sensitive issues directly.
+  - name: 💼 Inquiries & Licensing Support
+    url: mailto:inbound@inboost.pro
+    about: Inquire about pilot access, licenses, and custom deployment.

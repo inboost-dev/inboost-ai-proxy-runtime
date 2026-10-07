@@ -1,0 +1,68 @@
+name: 🔑 License & Commercial Access Request
+description: Request commercial InBoost Pro keys, extended pilot quotas, or on-premise licensing
+title: "[license]: "
+labels: ["license", "commercial"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for your interest in **InBoost AI Proxy**!  
+        Use this template to request an enterprise evaluation license, extended pilot task quotas, or an on-premise deployment license.
+        
+        *Confidentiality Notice:* Do not share proprietary passwords or internal tokens here. Our licensing team will contact you securely.
+
+  - type: input
+    id: organization
+    attributes:
+      label: Organization / Team Name
+      description: What company or engineering team will be evaluating or deploying InBoost?
+      placeholder: "e.g. Acme Cloud Systems"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: license_type
+    attributes:
+      label: License or Evaluation Type
+      description: Select the licensing tier or evaluation structure requested.
+      options:
+        - "Extended Pilot Evaluation (Extended daily task limits)"
+        - "InBoost Commercial Pro (Production seat licenses)"
+        - "Self-Hosted Enterprise / On-Premise (Private vLLM/SGLang gateway)"
+        - "Academic / Open-Source Benchmark Grant"
+        - "Other Commercial Inquiry"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: primary_agent
+    attributes:
+      label: Primary Coding Agent / Environment
+      description: Which agent workflow will your team connect through InBoost?
+      options:
+        - "Claude Code (Anthropic CLI)"
+        - "Cursor IDE"
+        - "OpenHands / SWE-bench Automation"
+        - "Cline / Roo Code / Windsurf"
+        - "Custom SDK / Internal Gateway"
+        - "Multiple / Enterprise Wide"
+    validations:
+      required: true
+
+  - type: textarea
+    id: deployment_scope
+    attributes:
+      label: Deployment Scope & Requirements
+      description: Describe your workload, anticipated daily volume, or specific technical requirements (BYOK, air-gapped on-premise, custom model routing).
+      placeholder: "We have a team of 15 engineers using Claude Code and Cursor with SiliconFlow / Anthropic upstream..."
+    validations:
+      required: true
+
+  - type: input
+    id: contact_info
+    attributes:
+      label: Contact Email or Preferred Channel
+      description: Where should we send your license file or follow-up details?
+      placeholder: "developer@example.com"
+    validations:
+      required: true
