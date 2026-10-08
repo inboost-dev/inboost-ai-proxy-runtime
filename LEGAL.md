@@ -11,7 +11,7 @@ For the complete binding legal agreement, please review the [InBoost Free Commun
 The Community Developer tier (including the initial free phase and daily allowance) is provided on an as-is, promotional, and discretionary basis:
 
 1. **Daily Task Quota:** Community users receive a recurring daily allowance of tasks (auto-replenishing at 00:00 UTC). Upon quota exhaustion, requests transition to an un-optimized pass-through bypass mode without session termination.
-2. **Reservation of Rights:** InBoost Technologies reserves the right to modify, throttle, re-route, or discontinue community allocations at any time without prior notice or liability.
+2. **Reservation of Rights:** InBoost Technologies reserves the right to modify, adjust, or discontinue community optimization allowances in future releases without prior notice or liability. InBoost never redirects or alters your user-configured upstream API destinations.
 3. **No Commercial SLA on Community Tier:** Production environments requiring guaranteed throughput, strict contractual SLAs, dedicated capacity, and enterprise support must obtain an **InBoost Commercial Pro License** and configure Bring-Your-Own-Key (BYOK) mode.
 
 ---
@@ -29,7 +29,7 @@ InBoost adheres to a strict developer-first privacy standard:
 
 ## 3. Third-Party Upstream Inference & Infrastructure Disclaimer
 
-1. **Direct Upstream Execution:** Requests routed through InBoost AI Proxy are executed and processed directly by user-configured upstream model providers (e.g., Anthropic, OpenAI, SiliconFlow), third-party inference backends, or local runtimes (e.g., Ollama, vLLM) outside the control or ownership of InBoost Technologies.
+1. **Direct Upstream Execution (Local Gateway):** InBoost AI Proxy operates strictly as a local software gateway on your machine (`127.0.0.1:8080`). All requests are transmitted directly from your host to your user-configured upstream model providers (e.g., Anthropic, OpenAI, SiliconFlow) or local runtimes (e.g., Ollama, vLLM). InBoost does not operate an intermediary cloud proxy, does not inspect prompts on external servers, and never routes traffic through undisclosed third parties.
 2. **Zero Liability for Third-Party Outages:** InBoost Technologies disclaims all liability and assumes no responsibility for third-party hosting infrastructure, server availability, data retention policies of external hosts, latency spikes, or security policies of external model providers. All inference is consumed at your sole and exclusive risk.
 3. **Bring-Your-Own-Key (BYOK) Responsibility:** You remain solely responsible for compliance with the terms of service, billing policies, and acceptable use guidelines of your respective upstream API providers.
 
