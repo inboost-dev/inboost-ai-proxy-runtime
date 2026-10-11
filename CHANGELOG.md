@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-11
+
+### Added & Fixed
+- **L7 Circuit Breaker & Runaway Loop Prevention**:
+  - Implemented `L7CircuitBreaker` across core engine and Node.js proxy runtime.
+  - Hard session budget caps: `max_turns: 35`, `max_tokens: 2,000,000`, `max_cost_usd: $0.25`.
+  - Automatic detection and interception of unconfigured test framework loops (`ImproperlyConfigured`, `ModuleNotFoundError`, `pytest: command not found`).
+  - Injected synthesis directive on repeated test failures (3+ failures) to enforce immediate static AST patch synthesis and halt test execution rabbit holes.
+  - Hard circuit breaker halt (6+ failures or 35 turns) returning synthetic completion (`finish_reason: "stop"`) to protect downstream API spend.
+- **Agent Skill Hardening (Anti-Rabbit-Hole Rule)**:
+  - Added Rule 7 to `skills/inboost-proxy/SKILL.md`: strictly prohibits agents from entering test environment debugging loops when host test framework is unconfigured.
+
 ## [0.3.1] - 2026-10-07
 
 ### Security & Hardening

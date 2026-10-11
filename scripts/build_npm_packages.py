@@ -23,25 +23,21 @@ PACKAGES = [
     {
         "name": "@inboost-pro/inboost-ai-proxy",
         "description": "Local inference proxy and reliability gateway for Claude Code, Cursor, OpenHands, and Cline",
-        "tarball_expected": "inboost-pro-inboost-ai-proxy-0.3.1.tgz",
         "publish_access": "public",
     },
     {
         "name": "@inboost-pro/inboost-proxy",
         "description": "Local inference proxy and reliability gateway for Claude Code, Cursor, OpenHands, and Cline (alias package)",
-        "tarball_expected": "inboost-pro-inboost-proxy-0.3.1.tgz",
         "publish_access": "public",
     },
     {
         "name": "inboost-ai-proxy",
         "description": "Local inference proxy and reliability gateway for Claude Code, Cursor, OpenHands, and Cline",
-        "tarball_expected": "inboost-ai-proxy-0.3.1.tgz",
         "publish_access": "public",
     },
     {
         "name": "inboost-proxy",
         "description": "Local inference proxy and reliability gateway for Claude Code, Cursor, OpenHands, and Cline (alias package)",
-        "tarball_expected": "inboost-proxy-0.3.1.tgz",
         "publish_access": "public",
     },
 ]

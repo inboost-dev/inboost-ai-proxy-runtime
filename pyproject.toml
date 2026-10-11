@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "inboost-ai-proxy-runtime"
-version = "0.3.1"
+version = "0.3.2"
 description = "Distribution and binary release hub for InBoost AI Proxy: the sub-millisecond semantic inference gateway for AI coding agents."
 readme = "README.md"
 license = { text = "InBoost Free Community License (with Automatic Pro Elevation) v1.1" }
