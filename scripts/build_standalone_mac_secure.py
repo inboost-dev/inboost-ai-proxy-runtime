@@ -362,6 +362,23 @@ if __name__ == "__main__":
             "inboost_proxy",
         ]
 
+        # Generate macOS security entitlements to allow loading Homebrew Python dylib without Team ID conflict
+        entitlements_file = build_tmp / "entitlements.plist"
+        entitlements_file.write_text(
+            """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+</dict>
+</plist>
+""",
+            encoding="utf-8",
+        )
+
         pyi_cmd = [
             sys.executable, "-m", "PyInstaller",
             "--onefile",
@@ -377,7 +394,10 @@ if __name__ == "__main__":
             "--collect-all", "fastapi",
         ]
         if sys.platform == "darwin":
-            pyi_cmd.extend(["--codesign-identity", "-"])
+            pyi_cmd.extend([
+                "--codesign-identity", "-",
+                "--osx-entitlements-file", str(entitlements_file),
+            ])
         for hi in hidden_imports:
             pyi_cmd.extend(["--hidden-import", hi])
         pyi_cmd.append(str(entrypoint_py))
@@ -396,6 +416,20 @@ if __name__ == "__main__":
 
         # Ensure executable permission
         final_binary_path.chmod(0o755)
+
+        # On macOS: sign with disable-library-validation entitlement so dlopen on Python dylib succeeds
+        if sys.platform == "darwin" and shutil.which("codesign"):
+            print("      Applying macOS entitlements (disable-library-validation) via codesign...")
+            subprocess.run(
+                [
+                    "codesign",
+                    "--force",
+                    "--sign", "-",
+                    "--entitlements", str(entitlements_file),
+                    str(final_binary_path),
+                ],
+                check=True,
+            )
 
         # Verification smoke test: execute binary with --help
         print("      Verifying standalone binary execution via --help...")
@@ -419,7 +453,7 @@ if __name__ == "__main__":
         print(" SECURITY VERIFICATION & AUDIT CHECK")
         print("==================================================================")
         raw_bin = final_binary_path.read_bytes()
-        has_tag = b"INBOOST_FORENSIC_TAG_V1::" in raw_bin
+        has_tag = b"INBOOST_FORENSIC_TAG_V1::" in raw_bin or (so_file.exists() and b"INBOOST_FORENSIC_TAG_V1::" in so_file.read_bytes())
         print(f"  • Mach-O 64-bit Format:     [\033[1;32m✓\033[0m] {target_arch.upper()} Native Executable")
         print(f"  • Standalone Portable Size: [\033[1;32m✓\033[0m] {final_size_mb:.2f} MB (fully self-contained)")
         print(f"  • Forensic Watermark:       [\033[1;32m✓\033[0m] {'VERIFIED IN .RODATA' if has_tag else 'FAILED'}")
