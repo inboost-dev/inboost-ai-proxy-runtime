@@ -329,6 +329,16 @@ __all__ = ["create_app", "ProxyConfig", "UpstreamEndpoint", "ProxyLicenseGuard",
         entrypoint_py = build_tmp / "inboost_proxy_loader.py"
         entrypoint_py.write_text(
             """import sys
+# Eagerly initialize core dependencies before invoking Cythonized monolithic C-extension
+import cryptography.exceptions
+import cryptography.hazmat.primitives.serialization
+import cryptography.hazmat.primitives.asymmetric.ed25519
+import fastapi
+import uvicorn
+import httpx
+import pydantic
+import yaml
+
 from inboost_proxy import run_cli
 
 if __name__ == "__main__":
@@ -357,6 +367,9 @@ if __name__ == "__main__":
             "fastapi",
             "pydantic",
             "cryptography",
+            "cryptography.exceptions",
+            "cryptography.hazmat.primitives.serialization",
+            "cryptography.hazmat.primitives.asymmetric.ed25519",
             "httpx",
             "yaml",
             "inboost_proxy",
@@ -392,6 +405,9 @@ if __name__ == "__main__":
             f"--add-binary={so_file}{os.pathsep}inboost_proxy",
             "--collect-all", "uvicorn",
             "--collect-all", "fastapi",
+            "--collect-all", "cryptography",
+            "--collect-all", "pydantic",
+            "--collect-all", "httpx",
         ]
         if sys.platform == "darwin":
             pyi_cmd.extend([
