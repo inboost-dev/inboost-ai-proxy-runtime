@@ -296,6 +296,12 @@ def build_secure_mac_standalone(
         stripped_so_size = so_file.stat().st_size
         print(f"      Stripped C-extension size: {stripped_so_size / 1024:.1f} KB")
 
+        # Ensure compiled C-extension resides inside stage_pkg (inboost_proxy/)
+        target_so = stage_pkg / so_file.name
+        if so_file != target_so:
+            shutil.copy2(so_file, target_so)
+            so_file = target_so
+
         # Create facade __init__.py pointing ONLY to native compiled C-extension
         facade_init = stage_pkg / "__init__.py"
         facade_init.write_text(
@@ -352,6 +358,7 @@ if __name__ == "__main__":
             "cryptography",
             "httpx",
             "yaml",
+            "inboost_proxy",
         ]
 
         pyi_cmd = [
@@ -364,6 +371,9 @@ if __name__ == "__main__":
             "--clean",
             "--noconfirm",
             "--paths", str(stage_pkg.parent),
+            "--add-binary", f"{so_file}:inboost_proxy",
+            "--collect-all", "uvicorn",
+            "--collect-all", "fastapi",
         ]
         for hi in hidden_imports:
             pyi_cmd.extend(["--hidden-import", hi])
