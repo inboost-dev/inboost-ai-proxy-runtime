@@ -187,7 +187,7 @@ _register_proxy_submodule("protocol", ["ProtocolAdapter"])
 
 
 def verify_prerequisites() -> None:
-    """Ensures Cython, setuptools, and PyInstaller are installed."""
+    """Ensures Cython, setuptools, PyInstaller, and inboost-ai-core are accessible."""
     missing = []
     try:
         import Cython  # noqa: F401
@@ -205,6 +205,28 @@ def verify_prerequisites() -> None:
         print(f"  Missing: {', '.join(missing)}")
         print("\nPlease install them in your current virtual environment:")
         print(f"  \033[1;36mpip install {' '.join(missing)}\033[0m\n")
+        sys.exit(1)
+
+    # Check for inboost-ai-core / inboost_router dependency
+    core_src = REPO_ROOT.parent / "inboost-ai-core" / "src"
+    if core_src.exists() and str(core_src) not in sys.path:
+        sys.path.insert(0, str(core_src))
+
+    parser_src = REPO_ROOT.parent / "agent-tool-parser" / "src"
+    if parser_src.exists() and str(parser_src) not in sys.path:
+        sys.path.insert(0, str(parser_src))
+
+    try:
+        import inboost_core  # noqa: F401
+        import inboost_router  # noqa: F401
+    except ImportError:
+        print("\n\033[1;31mError: Required repository 'inboost-ai-core' not found:\033[0m")
+        print("  Neither installed in your Python environment nor found at adjacent path:")
+        print(f"  {core_src.parent}")
+        print("\nPlease clone inboost-ai-core alongside inboost-ai-proxy:")
+        print(f"  \033[1;36mcd {REPO_ROOT.parent} && git clone git@github.com:inboost-dev/inboost-ai-core.git\033[0m\n")
+        print("  or install it in your virtual environment:")
+        print("  \033[1;36mpip install -e ../inboost-ai-core\033[0m\n")
         sys.exit(1)
 
 
@@ -338,6 +360,12 @@ import uvicorn
 import httpx
 import pydantic
 import yaml
+try:
+    import inboost_router
+    import inboost_router.config
+    import inboost_core
+except ImportError:
+    pass
 
 from inboost_proxy import run_cli
 
@@ -373,6 +401,10 @@ if __name__ == "__main__":
             "httpx",
             "yaml",
             "inboost_proxy",
+            "inboost_router",
+            "inboost_router.config",
+            "inboost_core",
+            "agent_tool_parser",
         ]
 
         # Generate macOS security entitlements to allow loading Homebrew Python dylib without Team ID conflict
