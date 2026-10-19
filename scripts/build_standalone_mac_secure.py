@@ -24,6 +24,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import platform
 import shutil
 import subprocess
@@ -371,10 +372,12 @@ if __name__ == "__main__":
             "--clean",
             "--noconfirm",
             "--paths", str(stage_pkg.parent),
-            "--add-binary", f"{so_file}:inboost_proxy",
+            f"--add-binary={so_file}{os.pathsep}inboost_proxy",
             "--collect-all", "uvicorn",
             "--collect-all", "fastapi",
         ]
+        if sys.platform == "darwin":
+            pyi_cmd.extend(["--codesign-identity", "-"])
         for hi in hidden_imports:
             pyi_cmd.extend(["--hidden-import", hi])
         pyi_cmd.append(str(entrypoint_py))
@@ -384,16 +387,30 @@ if __name__ == "__main__":
         if not final_binary_path.exists():
             raise RuntimeError(f"PyInstaller failed to output binary to {final_binary_path}")
 
-        print("[7/7] Post-processing: symbol stripping and Apple ad-hoc codesign...")
-        if shutil.which("strip"):
-            try:
-                subprocess.run(["strip", str(final_binary_path)], check=True)
-            except (subprocess.SubprocessError, OSError) as e:
-                print(f"      Notice: strip on executable: {e}")
+        print("[7/7] Post-processing: automated smoke test & integrity verification...")
+        # CRITICAL: DO NOT run external `strip` on PyInstaller's onefile executable.
+        # PyInstaller appends the PKG archive after the Mach-O __LINKEDIT segment.
+        # Running `strip` truncates the overlay, producing:
+        # "[PYI-24620:ERROR] Could not load PyInstaller's embedded PKG archive from the executable".
+        # The proprietary C-extension (_runtime.so) was ALREADY stripped via `strip -x` in Step 5.
 
-        if sys.platform == "darwin" and shutil.which("codesign"):
-            subprocess.run(["codesign", "--force", "--deep", "--sign", "-", str(final_binary_path)], check=True)
-            print("      ✓ Signed with ad-hoc certificate via codesign")
+        # Ensure executable permission
+        final_binary_path.chmod(0o755)
+
+        # Verification smoke test: execute binary with --help
+        print("      Verifying standalone binary execution via --help...")
+        smoke_res = subprocess.run(
+            [str(final_binary_path), "--help"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if smoke_res.returncode != 0:
+            print(f"      [!] Smoke test warning: process returned {smoke_res.returncode}")
+            if smoke_res.stderr:
+                print(f"      stderr: {smoke_res.stderr.strip()[:300]}")
+        else:
+            print("      ✓ Smoke test passed: standalone binary runs cleanly")
 
         final_size_mb = final_binary_path.stat().st_size / (1024 * 1024)
 
@@ -407,6 +424,7 @@ if __name__ == "__main__":
         print(f"  • Standalone Portable Size: [\033[1;32m✓\033[0m] {final_size_mb:.2f} MB (fully self-contained)")
         print(f"  • Forensic Watermark:       [\033[1;32m✓\033[0m] {'VERIFIED IN .RODATA' if has_tag else 'FAILED'}")
         print("  • Cython Machine Code:      [\033[1;32m✓\033[0m] _runtime compiled to C / zero raw .py logic")
+        print(f"  • PKG Archive Integrity:    [\033[1;32m✓\033[0m] {'PASSED' if smoke_res.returncode == 0 else 'CHECK NEEDED'}")
 
         # Copy to inboost-ai-proxy-runtime if adjacent
         if RUNTIME_REPO.exists() and (RUNTIME_REPO / "dist").exists():

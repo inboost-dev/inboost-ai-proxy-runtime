@@ -119,14 +119,9 @@ def build_binary(
     print(f"[*] Running PyInstaller: {' '.join(cmd)}")
     subprocess.run(cmd, check=True)
 
-    # Post-processing: strip symbols
-    strip_bin = shutil.which("strip")
-    if strip_bin and target_binary.exists():
-        print(f"[*] Stripping symbols from {target_binary.name}...")
-        try:
-            subprocess.run([strip_bin, str(target_binary)], check=True)
-        except Exception as e:
-            print(f"    Warning: symbol stripping failed: {e}", file=sys.stderr)
+    # CRITICAL: Do NOT run strip on PyInstaller single-file binary, as it deletes
+    # the appended PKG archive and causes PYI-24620 error.
+    target_binary.chmod(0o755)
 
     # Post-processing for macOS: ad-hoc codesign
     if final_os == "darwin" and target_binary.exists():
@@ -134,8 +129,8 @@ def build_binary(
         if codesign_bin:
             print(f"[*] Ad-hoc code signing macOS binary: {target_binary.name}...")
             try:
-                subprocess.run([codesign_bin, "--force", "--deep", "--sign", "-", str(target_binary)], check=True)
-            except Exception as e:
+                subprocess.run([codesign_bin, "--force", "--sign", "-", str(target_binary)], check=True)
+            except (subprocess.SubprocessError, OSError) as e:
                 print(f"    Warning: codesign failed: {e}", file=sys.stderr)
 
     print(f"[✓] Standalone binary ready at: {target_binary} ({target_binary.stat().st_size:,} bytes)")
