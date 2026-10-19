@@ -82,13 +82,13 @@ class InBoostImportStripper(ast.NodeTransformer):
     def visit_Import(self, node: ast.Import) -> ast.AST | None:
         names = [n for n in node.names if not n.name.startswith("inboost_proxy")]
         if not names:
-            return None
+            return ast.Pass()
         node.names = names
         return node
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.AST | None:
         if node.module and node.module.startswith("inboost_proxy"):
-            return None
+            return ast.Pass()
         return node
 
 
@@ -392,6 +392,14 @@ if __name__ == "__main__":
             encoding="utf-8",
         )
 
+        search_paths = [str(stage_pkg.parent)]
+        core_src = REPO_ROOT.parent / "inboost-ai-core" / "src"
+        if core_src.exists():
+            search_paths.append(str(core_src))
+        parser_src = REPO_ROOT.parent / "agent-tool-parser" / "src"
+        if parser_src.exists():
+            search_paths.append(str(parser_src))
+
         pyi_cmd = [
             sys.executable, "-m", "PyInstaller",
             "--onefile",
@@ -401,7 +409,6 @@ if __name__ == "__main__":
             "--specpath", str(build_tmp),
             "--clean",
             "--noconfirm",
-            "--paths", str(stage_pkg.parent),
             f"--add-binary={so_file}{os.pathsep}inboost_proxy",
             "--collect-all", "uvicorn",
             "--collect-all", "fastapi",
@@ -409,6 +416,12 @@ if __name__ == "__main__":
             "--collect-all", "pydantic",
             "--collect-all", "httpx",
         ]
+        for sp in search_paths:
+            pyi_cmd.extend(["--paths", sp])
+        if core_src.exists():
+            pyi_cmd.extend(["--collect-all", "inboost_core", "--collect-all", "inboost_router"])
+        if parser_src.exists():
+            pyi_cmd.extend(["--collect-all", "agent_tool_parser"])
         if sys.platform == "darwin":
             pyi_cmd.extend([
                 "--codesign-identity", "-",
