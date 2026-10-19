@@ -12,7 +12,7 @@ COLOR_GREEN="\033[1;32m"
 COLOR_YELLOW="\033[1;33m"
 COLOR_RED="\033[1;31m"
 
-INBOOST_VERSION="${INBOOST_VERSION:-0.3.0}"
+INBOOST_VERSION="${INBOOST_VERSION:-0.3.3}"
 GITHUB_REPO="inboost-dev/inboost-ai-proxy-runtime"
 RELEASE_BASE_URL="https://github.com/${GITHUB_REPO}/releases/download/v${INBOOST_VERSION}"
 
@@ -168,7 +168,16 @@ if [ "$INSTALL_SUCCESS" -eq 0 ] && [ "${INBOOST_INSTALL_METHOD:-binary}" = "bina
   TEMP_BIN="${TMP_DIR}/${BINARY_NAME}"
   TEMP_CHECKSUMS="${TMP_DIR}/checksums.txt"
 
+  DOWNLOADED=0
   if download_file "$CHECKSUMS_URL" "$TEMP_CHECKSUMS" && download_file "$BINARY_URL" "$TEMP_BIN"; then
+    DOWNLOADED=1
+  elif download_file "https://raw.githubusercontent.com/${GITHUB_REPO}/v${INBOOST_VERSION}/dist/checksums.txt" "$TEMP_CHECKSUMS" && download_file "https://raw.githubusercontent.com/${GITHUB_REPO}/v${INBOOST_VERSION}/dist/${BINARY_NAME}" "$TEMP_BIN"; then
+    DOWNLOADED=1
+  elif download_file "https://raw.githubusercontent.com/${GITHUB_REPO}/main/dist/checksums.txt" "$TEMP_CHECKSUMS" && download_file "https://raw.githubusercontent.com/${GITHUB_REPO}/main/dist/${BINARY_NAME}" "$TEMP_BIN"; then
+    DOWNLOADED=1
+  fi
+
+  if [ "$DOWNLOADED" -eq 1 ]; then
     echo -e "Verifying cryptographic SHA-256 integrity..."
     EXPECTED_HASH="$(grep "  ${BINARY_NAME}$" "$TEMP_CHECKSUMS" | awk '{print $1}' || true)"
     

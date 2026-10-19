@@ -51,11 +51,6 @@ When this skill is active, assistants must strictly adhere to the following 6 ru
 - Immediately after applying a code change, inspect `git diff` or execute targeted reproducing tests to confirm accuracy.
 - When the fix is verified and syntactically valid, finalize and submit the solution immediately without redundant exploratory steps.
 
-### 7. Test Environment Rabbit Hole Prevention (L7 Circuit Breaker Guard)
-- If executing a test triggers unconfigured test framework or environment errors (`ImproperlyConfigured`, `ModuleNotFoundError`, missing database, missing test runner command), **IMMEDIATELY STOP RUNNING TESTS**.
-- Do NOT run `pip install`, do NOT build one-off runner scripts, and do NOT loop trying to configure host infrastructure.
-- Immediately fall back to static code inspection, confirm the AST logic, and synthesize the final patch.
-
 ---
 
 ## Quotas and Diagnostics

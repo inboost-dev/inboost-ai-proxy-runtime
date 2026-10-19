@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-19
+
+### Added
+- **Claude Code 2.1.303 & Google Antigravity 1.4.2 Certification**: Full compatibility verification across Anthropic beta features, thinking delta SSE streaming, and adaptive session management.
+- **SSE Thinking Delta Streaming**: Real-time passthrough for `thinking_delta` and `thinking_signature` blocks over Server-Sent Events, ensuring seamless reasoning streaming for Claude Code and Antigravity.
+- **Message Token Counter (`/v1/messages/count_tokens`)**: Dedicated lightweight endpoint estimating token load and caching impact before dispatch.
+- **Resilient Git Tag CDN Fallback**: `bin/inboost-proxy.js` and `install.sh` automatically fall back to downloading standalone native binaries from raw GitHub Git Tag CDN when GitHub Releases API is unavailable.
+- **Dedicated CLI Alias**: Support for both `inboost-proxy` and `inboost-ai-proxy` command invocations.
+
+### Fixed
+- **License File Isolation**: Dedicated proxy evaluation license filename `inboost-proxy.lic` (with `proxy.lic` fallback) and `INBOOST_PROXY_LICENSE_FILE` precedence, preventing cross-product collision with InBoost LongRun licenses.
+- **Port 8080 Collision Prevention**: Pre-startup port check alerts users if port 8080 is occupied, displaying clear diagnostics to resolve port conflicts.
+- **Circuit Breaker & Error Forwarding**: Passthrough of upstream 429 RateLimit and 503 Overloaded headers (`retry-after`) without masking under generic 502 errors.
+
 ## [0.3.2] - 2026-10-11
 
 ### Added & Fixed

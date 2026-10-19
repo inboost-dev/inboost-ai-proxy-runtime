@@ -7,7 +7,8 @@
 [![Official Portal](https://img.shields.io/badge/Portal-inboost.pro%2Fai--proxy-blue.svg)](https://inboost.pro/ai-proxy)
 [![Access: Public Pilot](https://img.shields.io/badge/Access-Public%20Pilot-brightgreen.svg)](https://github.com/inboost-dev/inboost-ai-proxy-runtime)
 [![License: InBoost Community / Pro](https://img.shields.io/badge/License-InBoost%20Community%20%2F%20Pro-blue.svg)](https://github.com/inboost-dev/inboost-ai-proxy-runtime/blob/main/LICENSE)
-[![Release](https://img.shields.io/badge/Release-v0.3.1-orange.svg)](https://github.com/inboost-dev/inboost-ai-proxy-runtime/releases)
+[![Release](https://img.shields.io/badge/Release-v0.3.3-orange.svg)](https://github.com/inboost-dev/inboost-ai-proxy-runtime/releases)
+[![Tests](https://img.shields.io/badge/Tests-160%20passing-brightgreen.svg)](https://github.com/inboost-dev/inboost-ai-proxy-runtime)
 [![Zero Secret Exposure](https://img.shields.io/badge/Security-Zero%20Secret%20Exposure-brightgreen.svg)](https://github.com/inboost-dev/inboost-ai-proxy-runtime/blob/main/SECURITY.md)
 
 </div>

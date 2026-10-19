@@ -19,10 +19,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SCRATCH_DIR = Path("/opt/.gemini/antigravity-cli/scratch")
 PROXY_REPO = REPO_ROOT.parent / "inboost-ai-proxy"
-if not PROXY_REPO.exists() and (SCRATCH_DIR / "inboost-ai-proxy").exists():
-    PROXY_REPO = SCRATCH_DIR / "inboost-ai-proxy"
 
 
 def detect_platform() -> tuple[str, str]:
@@ -79,17 +76,10 @@ def build_binary(
     pyinstaller_cmd = [sys.executable, "-m", "PyInstaller"] if shutil.which("pyinstaller") or True else ["pyinstaller"]
 
     # Gather search paths
-    core_src = REPO_ROOT.parent / "inboost-ai-core" / "src"
-    if not core_src.exists() and (SCRATCH_DIR / "inboost-ai-core" / "src").exists():
-        core_src = SCRATCH_DIR / "inboost-ai-core" / "src"
-    parser_src = REPO_ROOT.parent / "agent-tool-parser" / "src"
-    if not parser_src.exists() and (SCRATCH_DIR / "agent-tool-parser" / "src").exists():
-        parser_src = SCRATCH_DIR / "agent-tool-parser" / "src"
-
     paths = [
         str(PROXY_REPO / "src"),
-        str(core_src),
-        str(parser_src),
+        str(REPO_ROOT.parent / "inboost-ai-core" / "src"),
+        str(REPO_ROOT.parent / "agent-tool-parser" / "src"),
     ]
     existing_paths = [p for p in paths if Path(p).exists()]
 

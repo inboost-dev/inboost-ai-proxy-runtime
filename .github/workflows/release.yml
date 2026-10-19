@@ -86,7 +86,7 @@ jobs:
 
       - name: Smoke test native Python wheel installation
         run: |
-          pip install ./dist/inboost_ai_proxy-*-cp312-cp312-*.whl
+          pip install ./dist/inboost_ai_proxy-*-cp312-cp312-linux_x86_64.whl
           python3 -c "import inboost_proxy; print('Native Cython wheel verified successfully')"
 
       - name: Create GitHub Release and Upload Verified Multi-Platform Assets

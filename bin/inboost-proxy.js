@@ -20,7 +20,7 @@ const os = require("os");
 const http = require("http");
 const https = require("https");
 
-const VERSION = "0.3.2";
+const VERSION = "0.3.3";
 const rawArgs = process.argv.slice(2);
 
 // Parse CLI flags
@@ -64,7 +64,7 @@ The proxy acts as an intelligent cognitive execution arbiter between your editor
 
 ## Operating Invariants for Coding Assistants
 
-When this skill is active, assistants must strictly adhere to the following 7 rules:
+When this skill is active, assistants must strictly adhere to the following 6 rules:
 
 ### 1. Endpoint Configuration
 - **Claude Code:** Ensure \`ANTHROPIC_BASE_URL\` is set to \`http://localhost:8080\` and \`CLAUDE_CODE_AUTO_MODE_SERVER=0\`.
@@ -92,11 +92,6 @@ When this skill is active, assistants must strictly adhere to the following 7 ru
 ### 6. Verification & Immediate Completion
 - Immediately after applying a code change, inspect \`git diff\` or execute targeted reproducing tests to confirm accuracy.
 - When the fix is verified and syntactically valid, finalize and submit the solution immediately without redundant exploratory steps.
-
-### 7. Test Environment Rabbit Hole Prevention (L7 Circuit Breaker Guard)
-- If executing a test triggers unconfigured test framework or environment errors (\`ImproperlyConfigured\`, \`ModuleNotFoundError\`, missing database, missing test runner command), **IMMEDIATELY STOP RUNNING TESTS**.
-- Do NOT run \`pip install\`, do NOT build one-off runner scripts, and do NOT loop trying to configure host infrastructure.
-- Immediately fall back to static code inspection, confirm the AST logic, and synthesize the final patch.
 
 ---
 
@@ -401,22 +396,30 @@ async function ensureRuntimeBinary() {
     }
   }
 
-  // Attempt release binary download
-  const releaseUrl = `https://github.com/inboost-dev/inboost-ai-proxy-runtime/releases/download/v${VERSION}/${localTargetName}`;
+  // Attempt release binary download with resilient fallback to raw tag CDN
+  const releaseUrls = [
+    `https://raw.githubusercontent.com/inboost-dev/inboost-ai-proxy-runtime/v${VERSION}/dist/${localTargetName}`,
+    `https://github.com/inboost-dev/inboost-ai-proxy-runtime/raw/v${VERSION}/dist/${localTargetName}`,
+    `https://github.com/inboost-dev/inboost-ai-proxy-runtime/releases/download/v${VERSION}/${localTargetName}`,
+    `https://raw.githubusercontent.com/inboost-dev/inboost-ai-proxy-runtime/main/dist/${localTargetName}`,
+  ];
   if (!fs.existsSync(inboostDir)) {
     try { fs.mkdirSync(inboostDir, { recursive: true }); } catch (e) {}
   }
 
-  try {
-    await downloadFile(releaseUrl, cachedBinary);
-    fs.chmodSync(cachedBinary, 0o755);
-    if (process.platform === "darwin") {
-      spawnSync("xattr", ["-d", "com.apple.quarantine", cachedBinary], { stdio: "ignore" });
+  for (const rUrl of releaseUrls) {
+    try {
+      await downloadFile(rUrl, cachedBinary);
+      fs.chmodSync(cachedBinary, 0o755);
+      if (process.platform === "darwin") {
+        spawnSync("xattr", ["-d", "com.apple.quarantine", cachedBinary], { stdio: "ignore" });
+      }
+      return cachedBinary;
+    } catch (err) {
+      continue;
     }
-    return cachedBinary;
-  } catch (err) {
-    return null;
   }
+  return null;
 }
 
 // ==============================================================================
@@ -445,101 +448,6 @@ function loadDotEnv() {
     }
   }
   return env;
-}
-
-const sessionRegistry = new Map();
-
-const TEST_ERROR_PATTERNS = [
-  /django\.core\.exceptions\.ImproperlyConfigured/i,
-  /Requested setting [A-Z_]+, but settings are not configured/i,
-  /ModuleNotFoundError:\s*No module named/i,
-  /ImportError:\s*cannot import name/i,
-  /pytest:\s*command not found/i,
-  /DatabaseError:/i,
-  /ConnectionRefusedError:/i,
-];
-
-function deriveSessionId(headers, messages) {
-  headers = headers || {};
-  for (const h of ["x-inboost-session-id", "x-session-id", "x-openhands-session-id", "x-request-id"]) {
-    if (headers[h]) return String(headers[h]);
-  }
-  let fingerprint = "default";
-  if (Array.isArray(messages)) {
-    for (const m of messages) {
-      if (m && (m.role === "system" || m.role === "user") && m.content) {
-        fingerprint = typeof m.content === "string" ? m.content.slice(0, 100) : JSON.stringify(m.content).slice(0, 100);
-        break;
-      }
-    }
-  }
-  const crypto = require("crypto");
-  return crypto.createHash("sha256").update(fingerprint).digest("hex").slice(0, 16);
-}
-
-function evaluateCircuitBreaker(sessionId, messages) {
-  let state = sessionRegistry.get(sessionId);
-  if (!state) {
-    state = { turns: 0, cumulativeTokens: 0, consecutiveErrors: 0 };
-    sessionRegistry.set(sessionId, state);
-  }
-  state.turns += 1;
-  const estimatedTokens = Math.max(50, Math.floor(JSON.stringify(messages).length / 4));
-  state.cumulativeTokens += estimatedTokens;
-
-  // Scan recent tool outputs for repetitive test errors
-  if (Array.isArray(messages)) {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      const m = messages[i];
-      let content = "";
-      if (m.role === "tool") {
-        content = typeof m.content === "string" ? m.content : JSON.stringify(m.content);
-      } else if (m.role === "user" && Array.isArray(m.content)) {
-        for (const block of m.content) {
-          if (block && block.type === "tool_result") {
-            content += typeof block.content === "string" ? block.content : JSON.stringify(block.content);
-          }
-        }
-      }
-      if (content) {
-        const hasErr = TEST_ERROR_PATTERNS.some((pat) => pat.test(content));
-        if (hasErr) {
-          state.consecutiveErrors += 1;
-        } else {
-          state.consecutiveErrors = 0;
-        }
-        break;
-      }
-    }
-  }
-
-  // 1. Max turn cap (35) or cumulative tokens (2,000,000)
-  if (state.turns >= 35 || state.cumulativeTokens >= 2000000) {
-    return {
-      halt: true,
-      reason: "MAX_BUDGET_EXCEEDED",
-      message: `[INBOOST CIRCUIT BREAKER] Maximum turn limit (${state.turns} turns) or token quota exceeded. Halting execution loop to prevent runaway costs. Final patch synthesized.`,
-    };
-  }
-
-  // 2. Persistent test error loop (>= 6)
-  if (state.consecutiveErrors >= 6) {
-    return {
-      halt: true,
-      reason: "PERSISTENT_TEST_RUNNER_FAILURE",
-      message: "[INBOOST CIRCUIT BREAKER] Host test environment is persistently unconfigured. Halting execution loop to prevent token exhaustion. Final patch verified by static inspection.",
-    };
-  }
-
-  // 3. Repeated test errors warning (>= 3)
-  if (state.consecutiveErrors >= 3) {
-    return {
-      forceSynthesis: true,
-      directive: "[INBOOST CIRCUIT BREAKER] Detected repeated test runner failures due to missing environment/configuration. DO NOT continue executing tests or fixing test runners. Synthesize final code patch now.",
-    };
-  }
-
-  return { halt: false };
 }
 
 function startNodeProxyFallback(port, host) {
@@ -600,62 +508,17 @@ function startNodeProxyFallback(port, host) {
           payload = JSON.parse(Buffer.concat(bodyChunks).toString("utf-8"));
         } catch (e) {}
 
-        const isAnthropicReq = req.url.startsWith("/v1/messages");
-        let targetMessages = payload.messages || [];
-        if (isAnthropicReq && !Array.isArray(targetMessages)) {
-          targetMessages = [];
-        }
-
-        const sessionId = deriveSessionId(req.headers, targetMessages);
-        const cbStatus = evaluateCircuitBreaker(sessionId, targetMessages);
-
-        if (cbStatus.halt) {
-          if (isAnthropicReq) {
-            res.writeHead(200, {
-              "Content-Type": "application/json",
-              "x-inboost-circuit-breaker": "tripped",
-              "x-inboost-circuit-reason": cbStatus.reason,
-            });
-            res.end(JSON.stringify({
-              id: `msg_cb_${sessionId}`,
-              type: "message",
-              role: "assistant",
-              model: heavyModel,
-              content: [{ type: "text", text: cbStatus.message }],
-              stop_reason: "end_turn",
-              usage: { input_tokens: 100, output_tokens: 25 },
-            }));
-          } else {
-            res.writeHead(200, {
-              "Content-Type": "application/json",
-              "x-inboost-circuit-breaker": "tripped",
-              "x-inboost-circuit-reason": cbStatus.reason,
-            });
-            res.end(JSON.stringify({
-              id: `chatcmpl-cb-${sessionId}`,
-              object: "chat.completion",
-              created: Math.floor(Date.now() / 1000),
-              model: heavyModel,
-              choices: [{
-                index: 0,
-                message: { role: "assistant", content: cbStatus.message },
-                finish_reason: "stop",
-              }],
-              usage: { prompt_tokens: 100, completion_tokens: 25, total_tokens: 125 },
-            }));
-          }
-          return;
-        }
-
-        if (cbStatus.forceSynthesis && Array.isArray(targetMessages)) {
-          targetMessages.push({ role: "user", content: cbStatus.directive });
-        }
-
         // Forward to upstream
         try {
           const isAnthropicUpstream = upstreamBase.includes("anthropic.com");
           const targetSubpath = isAnthropicUpstream ? "/messages" : "/chat/completions";
           const upstreamUrl = new URL(upstreamBase.replace(/\/+$/, "") + targetSubpath);
+          const isAnthropicReq = req.url.startsWith("/v1/messages");
+          let targetMessages = payload.messages || [];
+
+          if (isAnthropicReq && !Array.isArray(targetMessages)) {
+            targetMessages = [];
+          }
 
           const forwardPayload = JSON.stringify({
             model: payload.model && payload.model !== "inboost-adaptive" ? payload.model : heavyModel,

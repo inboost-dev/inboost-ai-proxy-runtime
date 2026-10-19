@@ -1,51 +1,39 @@
 {
-  "version": "0.3.2",
-  "released_at": "2026-10-11T15:46:02.991128+00:00",
+  "version": "0.3.3",
+  "released_at": "2026-10-19T13:01:45.237398+00:00",
   "portal_url": "https://inboost.pro/ai-proxy",
   "documentation_url": "https://inboost.pro/ai-proxy",
   "issue_tracker": "https://github.com/inboost-dev/inboost-ai-proxy-runtime/issues",
   "artifacts": [
     {
-      "name": "inboost-ai-proxy-0.3.2.tgz",
-      "sha256": "4c1b990903d0eb97ff11ee91859cbf2546c1eb4cf23be1cac618053ae64d2477",
-      "size_bytes": 42966,
+      "name": "inboost-ai-proxy-0.3.3.tgz",
+      "sha256": "776a65c1eb3dc11b0d3542bc859daa550bf00328abed49aa9845271a2f8e8a00",
+      "size_bytes": 42024,
       "type": "archive"
     },
     {
-      "name": "inboost-pro-inboost-ai-proxy-0.3.2.tgz",
-      "sha256": "71aabbcb8fa4703139cde6a8a3bf3c457f7b972d23f1a5b15121a0df51c086e7",
-      "size_bytes": 42967,
+      "name": "inboost-pro-inboost-ai-proxy-0.3.3.tgz",
+      "sha256": "c8a37e914a56a5070ecbe042159a5213796e91e29c901a121b47ed12dceaca47",
+      "size_bytes": 42023,
       "type": "archive"
     },
     {
-      "name": "inboost-pro-inboost-proxy-0.3.2.tgz",
-      "sha256": "a82a999e42043f326af8236e0aaf7d566aa77325303aa9675253edbcd5dd3ff3",
-      "size_bytes": 42979,
+      "name": "inboost-pro-inboost-proxy-0.3.3.tgz",
+      "sha256": "e6c2ee966dd8e28a970f017af295d2565055f03519eb0ca7e3013113cfeb8b17",
+      "size_bytes": 42035,
       "type": "archive"
     },
     {
-      "name": "inboost-proxy-0.3.2.tgz",
-      "sha256": "68e5ddb588b3fe0f49a324560e594abf1e6ccd958c79be31d140146121b20447",
-      "size_bytes": 42972,
+      "name": "inboost-proxy-0.3.3.tgz",
+      "sha256": "57624b2aceec0fa14e4d618130ac344377176e8d7f991625e7c193712bf66374",
+      "size_bytes": 42028,
       "type": "archive"
     },
     {
       "name": "inboost-proxy-linux-x86_64",
-      "sha256": "3d5b784a7210b18b84b2c04e2128c49b9f14989120a7b50a8f9f26495c30dc99",
-      "size_bytes": 59907552,
+      "sha256": "f13c503a243d0c58597c74db44bdfcc9171bb8ef4dc018775b4059494bdece43",
+      "size_bytes": 54270264,
       "type": "binary"
-    },
-    {
-      "name": "inboost_ai_proxy-0.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-      "sha256": "ab9fe28dc84540d195f22eab1142fb297f675c44897c67c79e283d2e4049b1ce",
-      "size_bytes": 5422743,
-      "type": "wheel"
-    },
-    {
-      "name": "inboost_proxy-0.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-      "sha256": "0747edbab148868982917e6e42ecdde1116a3249d9235e478c8806f6331eea01",
-      "size_bytes": 5422710,
-      "type": "wheel"
     }
   ]
 }

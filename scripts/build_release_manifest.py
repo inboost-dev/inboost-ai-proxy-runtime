@@ -214,7 +214,7 @@ def build_manifest(version: str, dist_dir: Path, output_file: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description="InBoost Release Manifest Builder")
-    parser.add_argument("--version", default="0.3.2", help="Release version (e.g. 0.3.2)")
+    parser.add_argument("--version", default="0.3.1", help="Release version (e.g. 0.3.1)")
     parser.add_argument("--dist-dir", default="dist", help="Directory containing release artifacts")
     parser.add_argument("--output", default="dist/release-manifest.json", help="Output manifest file")
     args = parser.parse_args()
